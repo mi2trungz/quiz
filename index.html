@@ -282,69 +282,89 @@
             <div id="inputSection" class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 max-w-4xl mx-auto fade-in">
                 <!-- SAVED QUIZZES LIST -->
                 <div id="savedQuizzesSection" class="mb-8 p-5 bg-blue-50 dark:bg-gray-700/50 rounded-xl border border-blue-100 dark:border-gray-600">
-                    <h3 class="text-lg font-bold text-gray-800 dark:text-gray-200 mb-2 flex items-center justify-between cursor-pointer" onclick="toggleSavedList()">
-                        <span><i class="fas fa-save mr-2 text-blue-600 dark:text-blue-400"></i> Bộ đề đã lưu</span>
-                        <i id="toggleIcon" class="fas fa-chevron-down text-gray-400 text-sm"></i>
-                    </h3>
-                    
-                    <!-- Backup Controls -->
-                    <div id="backupControls" class="flex gap-2 mb-4 pl-0">
-                        <button onclick="exportAllQuizzes()" class="text-xs bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 text-blue-700 dark:text-blue-300 font-medium px-3 py-1.5 rounded border border-blue-200 dark:border-gray-600 shadow-sm transition flex items-center">
-                            <i class="fas fa-download mr-1.5"></i> Sao lưu (Tất cả)
-                        </button>
-                        <button onclick="document.getElementById('importFile').click()" class="text-xs bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 text-green-700 dark:text-green-400 font-medium px-3 py-1.5 rounded border border-green-200 dark:border-gray-600 shadow-sm transition flex items-center">
-                            <i class="fas fa-upload mr-1.5"></i> Nhập sao lưu
-                        </button>
-                        <input type="file" id="importFile" class="hidden" accept=".json" onchange="importQuizzes(this)">
-                    </div>
+                <h3 class="text-lg font-bold text-gray-800 dark:text-gray-200 mb-2 flex items-center justify-between cursor-pointer" onclick="toggleSavedList()">
+                    <span><i class="fas fa-save mr-2 text-blue-600 dark:text-blue-400"></i> Bộ đề đã lưu</span>
+                    <i id="toggleIcon" class="fas fa-chevron-down text-gray-400 text-sm"></i>
+                </h3>
+                
+                <!-- Backup Controls -->
+                <div id="backupControls" class="flex gap-2 mb-4 pl-0">
+                    <button onclick="exportAllQuizzes()" class="text-xs bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 text-blue-700 dark:text-blue-300 font-medium px-3 py-1.5 rounded border border-blue-200 dark:border-gray-600 shadow-sm transition flex items-center">
+                        <i class="fas fa-download mr-1.5"></i> Sao lưu (Tất cả)
+                    </button>
+                    <button onclick="document.getElementById('importFile').click()" class="text-xs bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 text-green-700 dark:text-green-400 font-medium px-3 py-1.5 rounded border border-green-200 dark:border-gray-600 shadow-sm transition flex items-center">
+                        <i class="fas fa-upload mr-1.5"></i> Nhập sao lưu
+                    </button>
+                    <input type="file" id="importFile" class="hidden" accept=".json" onchange="importQuizzes(this)">
+                </div>
 
-                    <div id="savedContainer" class="transition-all duration-300">
-                        <div id="savedQuizzesList" class="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-60 overflow-y-auto pr-2 custom-scrollbar">
-                            <!-- Javascript will inject items here -->
-                        </div>
-                        <div id="noSavedMsg" class="text-gray-500 dark:text-gray-400 italic text-center p-2 bg-white dark:bg-gray-800 rounded-lg border border-dashed border-gray-300 dark:border-gray-600 hidden">
-                            Chưa có bộ đề nào được lưu.
-                        </div>
+                <div id="savedContainer" class="transition-all duration-300">
+                    <div id="savedQuizzesList" class="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-60 overflow-y-auto pr-2 custom-scrollbar">
+                        <!-- Javascript will inject items here -->
+                    </div>
+                    <div id="noSavedMsg" class="text-gray-500 dark:text-gray-400 italic text-center p-2 bg-white dark:bg-gray-800 rounded-lg border border-dashed border-gray-300 dark:border-gray-600 hidden">
+                        Chưa có bộ đề nào được lưu.
                     </div>
                 </div>
-                
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 border-t border-gray-100 dark:border-gray-700">
-                    <!-- Cột nội dung câu hỏi -->
-                    <div class="md:col-span-2 space-y-2">
-                        <div class="flex justify-between items-end mb-1">
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Nội dung câu hỏi & Đáp án</label>
-                        </div>
-                        <textarea id="rawContent" rows="12" class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white placeholder-gray-400" placeholder="Câu 1: Thủ đô của Việt Nam là gì?
+            </div>
+            
+            <!-- Đã chỉnh sửa grid-cols-3 thành grid-cols-2 để cân xứng -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-gray-100 dark:border-gray-700">
+                <!-- Cột nội dung câu hỏi -->
+                <div class="space-y-2">
+                    <div class="flex justify-between items-center mb-1">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Nội dung câu hỏi & Đáp án</label>
+                        <!-- Nút Hướng dẫn -->
+                        <button onclick="document.getElementById('welcomeModal').classList.remove('hidden')" class="text-xs bg-blue-100 hover:bg-blue-200 dark:bg-blue-900/50 dark:hover:bg-blue-800 text-blue-700 dark:text-blue-300 px-2 py-1 rounded transition border border-blue-200 dark:border-blue-800 shadow-sm flex items-center">
+                            <i class="fas fa-info-circle mr-1"></i> Hướng dẫn nhập
+                        </button>
+                    </div>
+                    <!-- Chuyển dòng note lên đây -->
+                    <p class="text-xs text-gray-500 dark:text-gray-400 italic mb-1">* Cứ copy đại vào, AI sẽ tự động nhận dạng câu hỏi và các lựa chọn A B C D.</p>
+                    
+                    <textarea id="rawContent" rows="12" class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white placeholder-gray-400" placeholder="Câu 1: Thủ đô của Việt Nam là gì?
 A. Hà Nội
 B. Đà Nẵng
 C. TP.HCM
 D. Cần Thơ
 
 Câu 2: ..."></textarea>
-                        <p class="text-xs text-gray-500 dark:text-gray-400 italic">* Hệ thống sẽ tự nhận diện A, B, C, D ở đầu dòng.</p>
-                    </div>
-
-                    <!-- Cột đáp án đúng -->
-                    <div class="space-y-2">
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mt-7">Chuỗi đáp án đúng</label>
-                        <textarea id="answerKeyRaw" rows="12" class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none font-mono text-lg tracking-widest uppercase dark:bg-gray-700 dark:text-white" placeholder="AC..."></textarea>
-                        <div id="keyCount" class="text-right text-sm text-gray-500 dark:text-gray-400">Đã nhập: 0 đáp án</div>
-                    </div>
                 </div>
 
-                <div class="mt-6 flex flex-col items-center gap-4">
-                    <button onclick="processData()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transform transition hover:-translate-y-1 w-48">
-                        Tiếp tục <i class="fas fa-arrow-right ml-2"></i>
-                    </button>
+                <!-- Cột đáp án đúng -->
+                <div class="space-y-2">
+                    <!-- Đã xóa mt-7 để thẳng hàng với bên trái -->
+                    <div class="flex justify-between items-center mb-1">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Chuỗi đáp án đúng</label>
+                    </div>
                     
-                    <button onclick="document.getElementById('prayModal').classList.remove('hidden')" class="text-yellow-600 dark:text-yellow-400 hover:text-yellow-700 dark:hover:text-yellow-300 font-semibold text-sm bg-yellow-50 dark:bg-yellow-900/30 hover:bg-yellow-100 dark:hover:bg-yellow-900/50 px-4 py-2 rounded-full border border-yellow-200 dark:border-yellow-700 transition shadow-sm transform hover:scale-105">
-                        <i class="fas fa-praying-hands mr-1"></i> Cầu nguyện may mắn
-                    </button>
+                    <!-- Dòng note mới thêm vào -->
+                    <div class="text-xs text-gray-500 dark:text-gray-400 italic mb-1">
+                        <p>Có thể lựa chọn 1 trong 2 kiểu ghi:</p>
+                        <p class="ml-2">- Kiểu 1: ADCDE</p>
+                        <p class="ml-2">- Kiểu 2: 1A2D3C4D5E</p>
+                    </div>
+
+                    <textarea id="answerKeyRaw" rows="12" class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none font-mono text-lg tracking-widest uppercase dark:bg-gray-700 dark:text-white" placeholder="AC..."></textarea>
+                    <div id="keyCount" class="text-right text-sm text-gray-500 dark:text-gray-400">Đã nhập: 0 đáp án</div>
                 </div>
-                <div id="errorMsg" class="text-red-500 text-center mt-2 hidden"></div>
             </div>
 
-            <!-- STEP 2: MODE SELECTION -->
+            <div class="mt-8 flex flex-row justify-center items-center gap-6">
+                <button onclick="document.getElementById('prayModal').classList.remove('hidden')" class="group relative px-6 py-3 font-bold text-yellow-600 dark:text-yellow-400 bg-yellow-50 dark:bg-yellow-900/20 rounded-full border-2 border-yellow-200 dark:border-yellow-700 hover:bg-yellow-100 dark:hover:bg-yellow-900/40 hover:border-yellow-300 transition-all shadow-sm hover:shadow-md transform hover:-translate-y-1 flex items-center">
+                    <i class="fas fa-praying-hands mr-2 text-xl group-hover:animate-pulse"></i> 
+                    <span>Cầu nguyện</span>
+                </button>
+
+                <button onclick="processData()" class="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-full shadow-lg hover:shadow-xl transform transition hover:-translate-y-1 flex items-center">
+                    <span>Tiếp tục</span> 
+                    <i class="fas fa-arrow-right ml-2"></i>
+                </button>
+            </div>
+            <div id="errorMsg" class="text-red-500 text-center mt-2 hidden"></div>
+        </div>
+
+        <!-- STEP 2: MODE SELECTION -->
             <div id="modeSelectionSection" class="hidden max-w-2xl mx-auto mt-10 bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg text-center fade-in">
                 <h2 class="text-2xl font-bold text-gray-800 dark:text-white mb-2">Chọn chế độ làm bài</h2>
                 <h3 id="currentQuizTitle" class="text-lg text-blue-600 dark:text-blue-400 font-medium mb-6"></h3>
@@ -475,6 +495,28 @@ Câu 2: ..."></textarea>
                 document.getElementById('loginOverlay').classList.remove('hidden');
             }
             
+            // --- TẠO BỘ ĐỀ MẪU NẾU TRỐNG ---
+            const currentSaved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+            if (currentSaved.length === 0) {
+                const sampleQuestions = [
+                    { id: 1, text: "Thủ đô của Việt Nam là thành phố nào?", options: {A: "TP. Hồ Chí Minh", B: "Hà Nội", C: "Đà Nẵng", D: "Hải Phòng"}, correctKey: "B", originalLabel: "Câu 1" },
+                    { id: 2, text: "Đỉnh núi cao nhất Việt Nam là gì?", options: {A: "Fansipan", B: "Pu Si Lung", C: "Bạch Mộc Lương Tử", D: "Tây Côn Lĩnh"}, correctKey: "A", originalLabel: "Câu 2" },
+                    { id: 3, text: "5 + 5 = ?", options: {A: "8", B: "9", C: "10", D: "11"}, correctKey: "C", originalLabel: "Câu 3" },
+                    { id: 4, text: "Ai là tác giả của Truyện Kiều?", options: {A: "Nguyễn Trãi", B: "Nguyễn Du", C: "Nguyễn Khuyến", D: "Trần Hưng Đạo"}, correctKey: "B", originalLabel: "Câu 4" },
+                    { id: 5, text: "Nước nào có diện tích lớn nhất thế giới?", options: {A: "Mỹ", B: "Trung Quốc", C: "Nga", D: "Canada"}, correctKey: "C", originalLabel: "Câu 5" }
+                ];
+                
+                const sampleQuiz = {
+                    id: Date.now(),
+                    name: "Đề mẫu: Kiến thức tổng hợp",
+                    questions: sampleQuestions,
+                    date: new Date().toLocaleDateString('vi-VN'),
+                    count: sampleQuestions.length
+                };
+                
+                localStorage.setItem(STORAGE_KEY, JSON.stringify([sampleQuiz]));
+            }
+
             loadSavedQuizzes();
         }
 
