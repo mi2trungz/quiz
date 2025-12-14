@@ -21,6 +21,12 @@
         /* Animation cho chuyển cảnh */
         .fade-in { animation: fadeIn 0.5s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Scrollbar tùy chỉnh */
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }
     </style>
 </head>
 <body class="min-h-screen flex flex-col">
@@ -42,12 +48,32 @@
         </div>
     </div>
 
+    <!-- SAVE CONFIRMATION POPUP -->
+    <div id="saveConfirmModal" class="fixed inset-0 bg-black bg-opacity-70 z-[110] hidden flex items-center justify-center p-4 fade-in">
+        <div class="bg-white rounded-xl shadow-2xl p-6 max-w-sm w-full text-center">
+            <div class="w-14 h-14 bg-yellow-100 text-yellow-600 rounded-full flex items-center justify-center text-2xl mx-auto mb-4">
+                <i class="fas fa-save"></i>
+            </div>
+            <h3 class="text-xl font-bold text-gray-800 mb-2">Lưu bộ đề?</h3>
+            <p class="text-gray-600 mb-6 text-sm">Bạn có muốn lưu bộ đề này vào danh sách để có thể làm lại sau này không?</p>
+            
+            <div class="flex flex-col gap-3">
+                <button onclick="handleSaveOption(true)" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg shadow transition">
+                    <i class="fas fa-check mr-2"></i> Có, tôi muốn lưu
+                </button>
+                <button onclick="handleSaveOption(false)" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-3 px-4 rounded-lg transition">
+                    Không, làm ngay thôi
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Header -->
     <header class="bg-blue-600 text-white p-4 shadow-md sticky top-0 z-50">
         <div class="container mx-auto flex justify-between items-center">
             <h1 class="text-2xl font-bold"><i class="fas fa-graduation-cap mr-2"></i>Tạo Quiz Nhanh</h1>
             <div class="flex gap-2">
-                <button onclick="document.getElementById('inputSection').classList.remove('hidden'); document.getElementById('modeSelectionSection').classList.add('hidden');" class="text-sm bg-blue-500 hover:bg-blue-600 px-3 py-1 rounded transition">
+                <button onclick="goHome()" class="text-sm bg-blue-500 hover:bg-blue-600 px-3 py-1 rounded transition">
                     <i class="fas fa-home mr-1"></i> Trang chủ
                 </button>
                 <button onclick="resetApp()" class="text-sm bg-blue-700 hover:bg-blue-800 px-3 py-1 rounded transition">
@@ -63,8 +89,36 @@
         <!-- STEP 1: INPUT DATA -->
         <div id="inputSection" class="bg-white rounded-lg shadow-lg p-6 max-w-4xl mx-auto fade-in">
             <h2 class="text-xl font-semibold mb-4 text-gray-700">Bước 1: Nhập dữ liệu câu hỏi</h2>
+
+            <!-- SAVED QUIZZES LIST -->
+            <div id="savedQuizzesSection" class="mb-8 p-5 bg-blue-50 rounded-xl border border-blue-100">
+                <h3 class="text-lg font-bold text-gray-800 mb-2 flex items-center justify-between cursor-pointer" onclick="toggleSavedList()">
+                    <span><i class="fas fa-save mr-2 text-blue-600"></i> Bộ đề đã lưu</span>
+                    <i id="toggleIcon" class="fas fa-chevron-down text-gray-400 text-sm"></i>
+                </h3>
+                
+                <!-- Backup Controls -->
+                <div id="backupControls" class="flex gap-2 mb-4 pl-0">
+                    <button onclick="exportAllQuizzes()" class="text-xs bg-white hover:bg-gray-50 text-blue-700 font-medium px-3 py-1.5 rounded border border-blue-200 shadow-sm transition flex items-center">
+                        <i class="fas fa-download mr-1.5"></i> Sao lưu (Tất cả)
+                    </button>
+                    <button onclick="document.getElementById('importFile').click()" class="text-xs bg-white hover:bg-gray-50 text-green-700 font-medium px-3 py-1.5 rounded border border-green-200 shadow-sm transition flex items-center">
+                        <i class="fas fa-upload mr-1.5"></i> Nhập sao lưu
+                    </button>
+                    <input type="file" id="importFile" class="hidden" accept=".json" onchange="importQuizzes(this)">
+                </div>
+
+                <div id="savedContainer" class="transition-all duration-300">
+                    <div id="savedQuizzesList" class="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-60 overflow-y-auto pr-2 custom-scrollbar">
+                        <!-- Javascript will inject items here -->
+                    </div>
+                    <div id="noSavedMsg" class="text-gray-500 italic text-center p-2 bg-white rounded-lg border border-dashed border-gray-300 hidden">
+                        Chưa có bộ đề nào được lưu.
+                    </div>
+                </div>
+            </div>
             
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 border-t border-gray-100">
                 <!-- Cột nội dung câu hỏi -->
                 <div class="md:col-span-2 space-y-2">
                     <label class="block text-sm font-medium text-gray-700">Nội dung câu hỏi & Đáp án</label>
@@ -92,19 +146,6 @@ Câu 2: ..."></textarea>
                 </button>
             </div>
             <div id="errorMsg" class="text-red-500 text-center mt-2 hidden"></div>
-
-            <!-- SAVED QUIZZES LIST (NEW) -->
-            <div id="savedQuizzesSection" class="mt-10 pt-8 border-t border-gray-200">
-                <h3 class="text-lg font-bold text-gray-700 mb-4 flex items-center">
-                    <i class="fas fa-save mr-2 text-blue-600"></i> Bộ đề đã lưu
-                </h3>
-                <div id="savedQuizzesList" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <!-- Javascript will inject items here -->
-                </div>
-                <div id="noSavedMsg" class="text-gray-500 italic text-center p-4 bg-gray-50 rounded hidden">
-                    Chưa có bộ đề nào được lưu. Hãy tạo và lưu một bộ đề mới!
-                </div>
-            </div>
         </div>
 
         <!-- STEP 2: MODE SELECTION -->
@@ -218,6 +259,111 @@ Câu 2: ..."></textarea>
         window.onload = function() {
             loadSavedQuizzes();
         }
+        
+        // --- UI UTILS ---
+        function toggleSavedList() {
+            const container = document.getElementById('savedContainer');
+            const icon = document.getElementById('toggleIcon');
+            if (container.classList.contains('hidden')) {
+                container.classList.remove('hidden');
+                icon.classList.remove('fa-chevron-right');
+                icon.classList.add('fa-chevron-down');
+            } else {
+                container.classList.add('hidden');
+                icon.classList.remove('fa-chevron-down');
+                icon.classList.add('fa-chevron-right');
+            }
+        }
+
+        // --- BACKUP & RESTORE ---
+        function exportAllQuizzes() {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            if (!saved || saved === '[]') {
+                alert("Không có dữ liệu để sao lưu!");
+                return;
+            }
+            
+            const blob = new Blob([saved], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `quiz_backup_all_${new Date().toISOString().slice(0,10)}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function exportSingleQuiz(id) {
+            const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+            const quiz = saved.find(q => q.id === id);
+            
+            if (!quiz) {
+                alert("Lỗi: Không tìm thấy bộ đề.");
+                return;
+            }
+
+            // Gói vào mảng để tương thích khi Import lại
+            const dataToExport = JSON.stringify([quiz], null, 2);
+            const blob = new Blob([dataToExport], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            // Tạo tên file an toàn
+            const safeName = quiz.name.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+            a.download = `quiz_backup_${safeName}_${quiz.date.replace(/\//g,'-')}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function importQuizzes(input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const importedData = JSON.parse(e.target.result);
+                    if (!Array.isArray(importedData)) {
+                        alert("File không hợp lệ (Không phải danh sách bộ đề).");
+                        return;
+                    }
+
+                    // Validate cơ bản
+                    const validQuizzes = importedData.filter(q => q.name && Array.isArray(q.questions));
+                    
+                    if (validQuizzes.length === 0) {
+                        alert("Không tìm thấy bộ đề hợp lệ trong file.");
+                        return;
+                    }
+
+                    // Merge vào localStorage (tránh trùng ID bằng cách tạo ID mới)
+                    let currentSaved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+                    let countAdded = 0;
+
+                    validQuizzes.forEach(q => {
+                        // Kiểm tra xem đã tồn tại chưa (đơn giản check theo tên và số câu hỏi để tránh trùng lặp nội dung)
+                        // Hoặc tốt nhất là cứ thêm vào nhưng renew ID
+                        q.id = Date.now() + Math.random(); // Tạo ID mới để tránh xung đột
+                        currentSaved.push(q);
+                        countAdded++;
+                    });
+
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(currentSaved));
+                    loadSavedQuizzes();
+                    alert(`Đã nhập thành công ${countAdded} bộ đề!`);
+
+                } catch (err) {
+                    console.error(err);
+                    alert("Lỗi khi đọc file. Vui lòng đảm bảo đây là file .json hợp lệ.");
+                }
+                input.value = ''; // Reset input
+            };
+            reader.readAsText(file);
+        }
+
 
         // --- INPUT PROCESSING ---
         document.getElementById('answerKeyRaw').addEventListener('input', function(e) {
@@ -244,14 +390,31 @@ Câu 2: ..."></textarea>
                 if(!confirm(`Cảnh báo: Bạn có ${parsedQuestions.length} câu hỏi nhưng chỉ có ${cleanKeys.length} đáp án. Tiếp tục?`)) return;
             }
 
-            // --- ASK FOR NAME & SAVE ---
-            const quizName = prompt("Nhập tên bộ đề để lưu lại (Bấm Cancel nếu không muốn lưu):");
-            if (quizName) {
-                saveQuizToStorage(quizName, parsedQuestions);
-            }
-
-            // Set Master Data & Proceed
+            // Set temporary master data
             masterQuestions = parsedQuestions;
+            
+            // Show custom Save Modal instead of native confirm
+            document.getElementById('saveConfirmModal').classList.remove('hidden');
+        }
+
+        function handleSaveOption(shouldSave) {
+            document.getElementById('saveConfirmModal').classList.add('hidden');
+            
+            let quizName = null;
+            if (shouldSave) {
+                setTimeout(() => {
+                    quizName = prompt("Nhập tên bộ đề để lưu:");
+                    if (quizName) {
+                        saveQuizToStorage(quizName, masterQuestions);
+                    }
+                    finalizeSetup(quizName);
+                }, 50);
+            } else {
+                finalizeSetup(null);
+            }
+        }
+
+        function finalizeSetup(quizName) {
             document.getElementById('currentQuizTitle').innerText = quizName ? `Đang làm: ${quizName}` : "Đang làm: Bộ đề chưa lưu";
             goToModeSelection();
         }
@@ -261,6 +424,13 @@ Câu 2: ..."></textarea>
             document.getElementById('modeSelectionSection').classList.remove('hidden');
             document.getElementById('totalQuestionsCount').innerText = masterQuestions.length;
             document.getElementById('errorMsg').classList.add('hidden');
+        }
+        
+        function goHome() {
+            document.getElementById('inputSection').classList.remove('hidden');
+            document.getElementById('modeSelectionSection').classList.add('hidden');
+            document.getElementById('quizSection').classList.add('hidden');
+            document.getElementById('resultSection').classList.add('hidden');
         }
 
         // --- STORAGE LOGIC ---
@@ -277,8 +447,7 @@ Câu 2: ..."></textarea>
             saved.push(newQuiz);
             localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
             
-            loadSavedQuizzes(); // Refresh list
-            alert(`Đã lưu bộ đề "${name}" thành công!`);
+            loadSavedQuizzes(); 
         }
 
         function loadSavedQuizzes() {
@@ -298,20 +467,23 @@ Câu 2: ..."></textarea>
             // Sort by newest first
             saved.reverse().forEach(quiz => {
                 const item = document.createElement('div');
-                item.className = "bg-white border border-gray-200 p-4 rounded-lg shadow-sm hover:shadow-md transition flex justify-between items-center";
+                item.className = "bg-white border border-gray-200 p-3 rounded-lg shadow-sm hover:shadow-md transition flex justify-between items-center group";
                 item.innerHTML = `
-                    <div>
-                        <h4 class="font-bold text-gray-800 text-lg">${quiz.name}</h4>
-                        <div class="text-sm text-gray-500">
-                            <span class="mr-3"><i class="far fa-calendar-alt"></i> ${quiz.date}</span>
-                            <span><i class="fas fa-list-ol"></i> ${quiz.count} câu</span>
+                    <div class="flex-grow min-w-0 mr-2">
+                        <h4 class="font-bold text-gray-800 text-base truncate group-hover:text-blue-600 transition" title="${quiz.name}">${quiz.name}</h4>
+                        <div class="text-xs text-gray-500 mt-1">
+                            <span class="mr-2 inline-block"><i class="far fa-calendar-alt"></i> ${quiz.date}</span>
+                            <span class="inline-block"><i class="fas fa-list-ol"></i> ${quiz.count} câu</span>
                         </div>
                     </div>
-                    <div class="flex gap-2">
-                        <button onclick="loadQuizById(${quiz.id})" class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold py-2 px-4 rounded transition">
-                            <i class="fas fa-play mr-1"></i> Làm bài
+                    <div class="flex gap-1 flex-shrink-0">
+                        <button onclick="exportSingleQuiz(${quiz.id})" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-600 text-xs font-bold py-2 px-3 rounded transition" title="Tải xuống file">
+                            <i class="fas fa-download"></i>
                         </button>
-                        <button onclick="deleteQuiz(${quiz.id})" class="bg-red-100 hover:bg-red-200 text-red-600 text-sm font-bold py-2 px-3 rounded transition">
+                        <button onclick="loadQuizById(${quiz.id})" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold py-2 px-3 rounded transition shadow-sm">
+                            <i class="fas fa-play"></i>
+                        </button>
+                        <button onclick="deleteQuiz(${quiz.id})" class="bg-gray-100 hover:bg-red-100 text-gray-500 hover:text-red-600 text-xs font-bold py-2 px-3 rounded transition">
                             <i class="fas fa-trash"></i>
                         </button>
                     </div>
