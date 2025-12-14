@@ -25,7 +25,7 @@
 </head>
 <body class="min-h-screen flex flex-col">
 
-    <!-- WELCOME POPUP (New) -->
+    <!-- WELCOME POPUP -->
     <div id="welcomeModal" class="fixed inset-0 bg-black bg-opacity-70 z-[100] flex items-center justify-center p-4 fade-in">
         <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full text-center border-4 border-blue-100">
             <div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-3xl mx-auto mb-4">
@@ -46,9 +46,14 @@
     <header class="bg-blue-600 text-white p-4 shadow-md sticky top-0 z-50">
         <div class="container mx-auto flex justify-between items-center">
             <h1 class="text-2xl font-bold"><i class="fas fa-graduation-cap mr-2"></i>Tạo Quiz Nhanh</h1>
-            <button onclick="resetApp()" class="text-sm bg-blue-700 hover:bg-blue-800 px-3 py-1 rounded transition">
-                <i class="fas fa-redo mr-1"></i> Tạo mới
-            </button>
+            <div class="flex gap-2">
+                <button onclick="document.getElementById('inputSection').classList.remove('hidden'); document.getElementById('modeSelectionSection').classList.add('hidden');" class="text-sm bg-blue-500 hover:bg-blue-600 px-3 py-1 rounded transition">
+                    <i class="fas fa-home mr-1"></i> Trang chủ
+                </button>
+                <button onclick="resetApp()" class="text-sm bg-blue-700 hover:bg-blue-800 px-3 py-1 rounded transition">
+                    <i class="fas fa-redo mr-1"></i> Tạo mới
+                </button>
+            </div>
         </div>
     </header>
 
@@ -69,11 +74,7 @@ B. Đà Nẵng
 C. TP.HCM
 D. Cần Thơ
 
-Câu 2: 1 + 1 bằng mấy?
-A. 3
-B. 4
-C. 2
-D. 5"></textarea>
+Câu 2: ..."></textarea>
                     <p class="text-xs text-gray-500 italic">* Hệ thống sẽ tự nhận diện A, B, C, D ở đầu dòng.</p>
                 </div>
 
@@ -91,11 +92,26 @@ D. 5"></textarea>
                 </button>
             </div>
             <div id="errorMsg" class="text-red-500 text-center mt-2 hidden"></div>
+
+            <!-- SAVED QUIZZES LIST (NEW) -->
+            <div id="savedQuizzesSection" class="mt-10 pt-8 border-t border-gray-200">
+                <h3 class="text-lg font-bold text-gray-700 mb-4 flex items-center">
+                    <i class="fas fa-save mr-2 text-blue-600"></i> Bộ đề đã lưu
+                </h3>
+                <div id="savedQuizzesList" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Javascript will inject items here -->
+                </div>
+                <div id="noSavedMsg" class="text-gray-500 italic text-center p-4 bg-gray-50 rounded hidden">
+                    Chưa có bộ đề nào được lưu. Hãy tạo và lưu một bộ đề mới!
+                </div>
+            </div>
         </div>
 
-        <!-- STEP 2: MODE SELECTION (New Screen) -->
+        <!-- STEP 2: MODE SELECTION -->
         <div id="modeSelectionSection" class="hidden max-w-2xl mx-auto mt-10 bg-white p-8 rounded-lg shadow-lg text-center fade-in">
-            <h2 class="text-2xl font-bold text-gray-800 mb-6">Bạn muốn làm bài theo hình thức nào?</h2>
+            <h2 class="text-2xl font-bold text-gray-800 mb-2">Chọn chế độ làm bài</h2>
+            <h3 id="currentQuizTitle" class="text-lg text-blue-600 font-medium mb-6"></h3>
+            
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <button onclick="startQuiz('single')" class="group p-6 border-2 border-blue-100 hover:border-blue-500 rounded-xl transition hover:bg-blue-50 flex flex-col items-center">
                     <div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-2xl mb-4 group-hover:bg-blue-600 group-hover:text-white transition">
@@ -118,11 +134,7 @@ D. 5"></textarea>
 
         <!-- STEP 3: QUIZ AREA -->
         <div id="quizSection" class="hidden max-w-4xl mx-auto fade-in">
-            
-            <!-- Quiz Container -->
-            <div id="quizContainer" class="space-y-6">
-                <!-- Questions injected here -->
-            </div>
+            <div id="quizContainer" class="space-y-6"></div>
 
             <!-- Controls for List Mode -->
             <div id="listModeControls" class="hidden mt-8 text-center pb-8">
@@ -146,7 +158,7 @@ D. 5"></textarea>
             </div>
         </div>
 
-        <!-- STEP 4: RESULT SECTION (New Screen) -->
+        <!-- STEP 4: RESULT SECTION -->
         <div id="resultSection" class="hidden max-w-3xl mx-auto mt-8 bg-white p-8 rounded-lg shadow-lg text-center fade-in">
             <div class="mb-6">
                 <div id="scoreIcon" class="text-6xl mb-4"></div>
@@ -191,14 +203,21 @@ D. 5"></textarea>
 
     <script>
         // --- STATE MANAGEMENT ---
-        let masterQuestions = []; // Lưu trữ bộ câu hỏi gốc đầy đủ
-        let questions = [];       // Bộ câu hỏi đang hoạt động (có thể là subset khi làm lại)
-        let userAnswers = {};     // Map { questionIndex: 'A' }
+        let masterQuestions = []; 
+        let questions = [];       
+        let userAnswers = {};     
         let currentMode = 'single';
         let currentQuestionIdx = 0;
         let isSubmitted = false;
-        let isReviewing = false; // Trạng thái xem lại
-        let checkedQuestions = {}; // Trạng thái đã check từng câu (cho mode single)
+        let isReviewing = false; 
+        let checkedQuestions = {}; 
+        
+        const STORAGE_KEY = 'quiz_maker_saved_quizzes';
+
+        // --- INIT ---
+        window.onload = function() {
+            loadSavedQuizzes();
+        }
 
         // --- INPUT PROCESSING ---
         document.getElementById('answerKeyRaw').addEventListener('input', function(e) {
@@ -222,19 +241,110 @@ D. 5"></textarea>
             });
 
             if (cleanKeys.length < parsedQuestions.length) {
-                if(!confirm(`Cảnh báo: Thiếu đáp án cho một số câu hỏi. Tiếp tục?`)) return;
+                if(!confirm(`Cảnh báo: Bạn có ${parsedQuestions.length} câu hỏi nhưng chỉ có ${cleanKeys.length} đáp án. Tiếp tục?`)) return;
             }
 
-            // Save to Master Data
+            // --- ASK FOR NAME & SAVE ---
+            const quizName = prompt("Nhập tên bộ đề để lưu lại (Bấm Cancel nếu không muốn lưu):");
+            if (quizName) {
+                saveQuizToStorage(quizName, parsedQuestions);
+            }
+
+            // Set Master Data & Proceed
             masterQuestions = parsedQuestions;
-            
-            // Switch UI
+            document.getElementById('currentQuizTitle').innerText = quizName ? `Đang làm: ${quizName}` : "Đang làm: Bộ đề chưa lưu";
+            goToModeSelection();
+        }
+
+        function goToModeSelection() {
             document.getElementById('inputSection').classList.add('hidden');
             document.getElementById('modeSelectionSection').classList.remove('hidden');
             document.getElementById('totalQuestionsCount').innerText = masterQuestions.length;
             document.getElementById('errorMsg').classList.add('hidden');
         }
 
+        // --- STORAGE LOGIC ---
+        function saveQuizToStorage(name, questionsData) {
+            const newQuiz = {
+                id: Date.now(),
+                name: name,
+                questions: questionsData,
+                date: new Date().toLocaleDateString('vi-VN'),
+                count: questionsData.length
+            };
+            
+            let saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+            saved.push(newQuiz);
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
+            
+            loadSavedQuizzes(); // Refresh list
+            alert(`Đã lưu bộ đề "${name}" thành công!`);
+        }
+
+        function loadSavedQuizzes() {
+            const listEl = document.getElementById('savedQuizzesList');
+            const noDataEl = document.getElementById('noSavedMsg');
+            const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+
+            listEl.innerHTML = '';
+            
+            if (saved.length === 0) {
+                noDataEl.classList.remove('hidden');
+                return;
+            }
+            
+            noDataEl.classList.add('hidden');
+            
+            // Sort by newest first
+            saved.reverse().forEach(quiz => {
+                const item = document.createElement('div');
+                item.className = "bg-white border border-gray-200 p-4 rounded-lg shadow-sm hover:shadow-md transition flex justify-between items-center";
+                item.innerHTML = `
+                    <div>
+                        <h4 class="font-bold text-gray-800 text-lg">${quiz.name}</h4>
+                        <div class="text-sm text-gray-500">
+                            <span class="mr-3"><i class="far fa-calendar-alt"></i> ${quiz.date}</span>
+                            <span><i class="fas fa-list-ol"></i> ${quiz.count} câu</span>
+                        </div>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="loadQuizById(${quiz.id})" class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold py-2 px-4 rounded transition">
+                            <i class="fas fa-play mr-1"></i> Làm bài
+                        </button>
+                        <button onclick="deleteQuiz(${quiz.id})" class="bg-red-100 hover:bg-red-200 text-red-600 text-sm font-bold py-2 px-3 rounded transition">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+                listEl.appendChild(item);
+            });
+        }
+
+        function loadQuizById(id) {
+            const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+            const quiz = saved.find(q => q.id === id);
+            
+            if (quiz) {
+                masterQuestions = quiz.questions;
+                document.getElementById('currentQuizTitle').innerText = `Đang làm: ${quiz.name}`;
+                goToModeSelection();
+            } else {
+                alert("Không tìm thấy bộ đề này!");
+            }
+        }
+
+        function deleteQuiz(id) {
+            if(!confirm("Bạn có chắc muốn xóa bộ đề này không?")) return;
+            
+            let saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+            saved = saved.filter(q => q.id !== id);
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
+            
+            loadSavedQuizzes();
+        }
+
+
+        // --- PARSING ---
         function parseQuestionsText(text) {
             const lines = text.split('\n');
             const result = [];
@@ -278,18 +388,14 @@ D. 5"></textarea>
 
         function startQuiz(mode, questionSet = null) {
             currentMode = mode;
-            // Nếu không truyền bộ câu hỏi (lần đầu hoặc làm lại hết), dùng masterQuestions
-            // Nếu truyền (làm lại câu sai), dùng bộ đó.
             questions = questionSet ? questionSet : [...masterQuestions];
             
-            // Reset State
             userAnswers = {};
             checkedQuestions = {};
             isSubmitted = false;
             isReviewing = false;
             currentQuestionIdx = 0;
 
-            // UI Changes
             document.getElementById('modeSelectionSection').classList.add('hidden');
             document.getElementById('resultSection').classList.add('hidden');
             document.getElementById('quizSection').classList.remove('hidden');
@@ -301,7 +407,7 @@ D. 5"></textarea>
             isReviewing = true;
             document.getElementById('resultSection').classList.add('hidden');
             document.getElementById('quizSection').classList.remove('hidden');
-            currentQuestionIdx = 0; // Reset về câu đầu tiên khi xem lại
+            currentQuestionIdx = 0; 
             renderQuiz();
         }
 
@@ -321,16 +427,13 @@ D. 5"></textarea>
                 controlsSingle.classList.remove('hidden');
                 controlsList.classList.add('hidden');
                 
-                // Render ONLY current question
                 const q = questions[currentQuestionIdx];
                 const card = createQuestionCard(q, currentQuestionIdx, true); 
                 container.appendChild(card);
                 
-                // Update nav
                 document.getElementById('questionProgress').innerText = `${q.originalLabel} (${currentQuestionIdx + 1}/${questions.length})`;
                 document.getElementById('btnPrev').disabled = currentQuestionIdx === 0;
                 
-                // Logic nút Next / Finish
                 const btnNext = document.getElementById('btnNext');
                 const btnFinish = document.getElementById('btnFinishSingle');
                 
@@ -338,7 +441,6 @@ D. 5"></textarea>
                     btnNext.classList.add('hidden');
                     btnFinish.classList.remove('hidden');
                     
-                    // Logic thay đổi nút Hoàn thành thành Quay lại khi đang Review
                     if (isReviewing) {
                          btnFinish.innerHTML = 'Quay lại kết quả <i class="fas fa-undo ml-1"></i>';
                          btnFinish.onclick = backToResults;
@@ -357,7 +459,6 @@ D. 5"></textarea>
                 controlsSingle.classList.add('hidden');
                 controlsList.classList.remove('hidden');
 
-                // Update List Control Button
                 const listBtn = controlsList.querySelector('button');
                 if (isReviewing) {
                     listBtn.innerHTML = '<i class="fas fa-undo mr-2"></i> Quay lại kết quả';
@@ -380,19 +481,14 @@ D. 5"></textarea>
             const div = document.createElement('div');
             div.className = "bg-white p-6 rounded-lg shadow-md border-l-4 border-blue-500 mb-4";
             
-            // Header: Use originalLabel to keep track (e.g., "Câu 5" even if it's 1st in retry list)
             const header = document.createElement('div');
             header.className = "font-bold text-lg mb-3 text-gray-800 flex justify-between";
             header.innerHTML = `<span>${q.originalLabel || 'Câu ' + (index+1)}: ${q.text}</span>`;
             div.appendChild(header);
 
-            // Grid
             const grid = document.createElement('div');
             grid.className = "grid grid-cols-1 gap-3";
 
-            // Determine State
-            // Trong mode single: chỉ coi là "checked" nếu người dùng bấm nút Check
-            // Trong mode all: coi là checked khi đã submit
             const isChecked = (currentMode === 'single' && checkedQuestions[index]) || isSubmitted;
             const userSelection = userAnswers[index];
             const correctKey = q.correctKey;
@@ -438,7 +534,6 @@ D. 5"></textarea>
 
             div.appendChild(grid);
 
-            // Check Button for Single Mode
             if (hasCheckBtn && !isChecked) {
                 const footer = document.createElement('div');
                 footer.className = "mt-4 pt-4 border-t border-gray-100 flex justify-end";
@@ -454,7 +549,6 @@ D. 5"></textarea>
                 div.appendChild(footer);
             }
             
-            // Explanation / Status Text
             if (isChecked) {
                 const footer = document.createElement('div');
                 footer.className = "mt-3 text-sm font-semibold";
@@ -496,7 +590,6 @@ D. 5"></textarea>
         }
 
         function submitQuiz() {
-            // Xác nhận nếu chưa làm hết (chỉ áp dụng mode all, mode single user tự next)
             if (currentMode === 'all') {
                 const answeredCount = Object.keys(userAnswers).length;
                 if (answeredCount < questions.length) {
@@ -505,9 +598,8 @@ D. 5"></textarea>
             }
 
             isSubmitted = true;
-            renderQuiz(); // Re-render to show colors
+            renderQuiz(); 
             
-            // Show Results Screen
             document.getElementById('quizSection').classList.add('hidden');
             document.getElementById('resultSection').classList.remove('hidden');
             
@@ -531,38 +623,31 @@ D. 5"></textarea>
             document.getElementById('countWrong').innerText = wrong;
             document.getElementById('countSkipped').innerText = skipped;
 
-            // Icon & Color
             const percent = (correct / questions.length) * 100;
             const iconEl = document.getElementById('scoreIcon');
             if (percent === 100) { iconEl.innerHTML = '🏆'; iconEl.className = "text-6xl mb-4 animate-bounce"; }
             else if (percent >= 50) { iconEl.innerHTML = '😊'; iconEl.className = "text-6xl mb-4"; }
             else { iconEl.innerHTML = '😅'; iconEl.className = "text-6xl mb-4"; }
 
-            // Logic nút "Làm lại câu sai"
             const btnRetryWrong = document.getElementById('btnRetryWrong');
             if (wrong + skipped === 0) {
-                btnRetryWrong.style.display = 'none'; // Ẩn nếu đúng hết
+                btnRetryWrong.style.display = 'none'; 
             } else {
                 btnRetryWrong.style.display = 'inline-block';
             }
         }
 
         function retryAll() {
-            // Reset về mode selection, hoặc làm lại ngay với mode hiện tại?
-            // Thường user muốn chọn lại mode hoặc làm lại ngay.
-            // Để đơn giản: Hỏi lại Mode.
             document.getElementById('resultSection').classList.add('hidden');
             document.getElementById('modeSelectionSection').classList.remove('hidden');
         }
 
         function retryWrong() {
-            // Lọc ra các câu sai hoặc chưa làm
             const wrongQuestions = questions.filter((q, idx) => {
                 const ans = userAnswers[idx];
-                return ans !== q.correctKey; // Sai hoặc chưa làm (ans là undefined)
+                return ans !== q.correctKey; 
             });
 
-            // Bắt đầu quiz mới với tập câu hỏi này, giữ nguyên mode hiện tại
             startQuiz(currentMode, wrongQuestions);
         }
 
