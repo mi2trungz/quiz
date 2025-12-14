@@ -31,20 +31,130 @@
 </head>
 <body class="min-h-screen flex flex-col">
 
-    <!-- WELCOME POPUP -->
-    <div id="welcomeModal" class="fixed inset-0 bg-black bg-opacity-70 z-[100] flex items-center justify-center p-4 fade-in">
-        <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full text-center border-4 border-blue-100">
-            <div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-3xl mx-auto mb-4">
-                <i class="fas fa-code-branch"></i>
+    <!-- LOGIN SCREEN -->
+    <div id="loginOverlay" class="fixed inset-0 bg-gray-900 z-[200] flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-2xl p-8 max-w-sm w-full text-center fade-in">
+            <div class="w-16 h-16 bg-blue-600 text-white rounded-full flex items-center justify-center text-3xl mx-auto mb-6 shadow-lg">
+                <i class="fas fa-lock"></i>
             </div>
-            <h2 class="text-2xl font-bold text-gray-800 mb-3">Thông báo</h2>
-            <p class="text-gray-600 mb-8 leading-relaxed">
-                Website được phát triển và thử nghiệm bởi <span class="font-bold text-blue-600">Thái Hải</span>.<br>
-                Đây chỉ là bản demo nên sẽ còn vài sai sót.
-            </p>
-            <button onclick="document.getElementById('welcomeModal').classList.add('hidden')" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-xl shadow-lg transition transform hover:-translate-y-1">
-                Đã hiểu
+            <h2 class="text-2xl font-bold text-gray-800 mb-2">Đăng nhập</h2>
+            <p class="text-gray-500 mb-6 text-sm">Hãy nhập từ khoá <span class="font-bold text-blue-600">thaihaiso1</span> để được truy cập.</p>
+            
+            <input type="text" id="passwordInput" class="w-full p-3 border border-gray-300 rounded-lg mb-4 focus:ring-2 focus:ring-blue-500 focus:outline-none transition" placeholder="Nhập mật khẩu...">
+            <p id="loginError" class="text-red-500 text-sm mb-3 hidden font-bold"><i class="fas fa-exclamation-circle mr-1"></i> Mật khẩu không đúng!</p>
+            
+            <button onclick="checkLogin()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg shadow-lg transition transform hover:-translate-y-1">
+                Truy cập <i class="fas fa-arrow-right ml-1"></i>
             </button>
+        </div>
+    </div>
+
+    <!-- COMBINED WELCOME & GUIDE POPUP (Initially Hidden) -->
+    <div id="welcomeModal" class="fixed inset-0 bg-black bg-opacity-70 z-[120] hidden flex items-center justify-center p-4 fade-in">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+            <!-- Header -->
+            <div class="bg-blue-600 text-white p-4 flex justify-between items-center">
+                <h3 class="text-xl font-bold"><i class="fas fa-info-circle mr-2"></i>Thông tin & Hướng dẫn</h3>
+                <button onclick="document.getElementById('welcomeModal').classList.add('hidden')" class="text-white hover:text-gray-200">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+
+            <!-- Content -->
+            <div class="p-6 overflow-y-auto custom-scrollbar flex-grow bg-gray-50">
+                
+                <!-- Disclaimer Section -->
+                <div class="text-center mb-8 border-b border-gray-200 pb-6">
+                    <div class="w-14 h-14 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-2xl mx-auto mb-3">
+                        <i class="fas fa-code-branch"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold text-gray-800 mb-2">Xin chào!</h2>
+                    <p class="text-gray-600 leading-relaxed">
+                        Website được phát triển và thử nghiệm bởi <span class="font-bold text-blue-600">Thái Hải</span>.<br>
+                        Đây chỉ là bản demo nên sẽ còn vài sai sót.
+                    </p>
+                </div>
+
+                <!-- Guide Content -->
+                <h3 class="text-lg font-bold text-gray-700 mb-4 pl-3 border-l-4 border-blue-500">Hướng dẫn sử dụng nhanh</h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    
+                    <!-- Section 1: Nhập liệu -->
+                    <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+                        <div class="flex items-center mb-3 text-blue-700">
+                            <span class="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center font-bold mr-2 text-sm">1</span>
+                            <h4 class="font-bold">Nhập câu hỏi & Đáp án</h4>
+                        </div>
+                        <ul class="space-y-2 text-sm text-gray-600">
+                            <li><i class="fas fa-keyboard mr-2 text-gray-400"></i> <strong>Ô bên trái:</strong> Dán nội dung câu hỏi. <br>
+                                <span class="text-xs text-gray-500 italic ml-6">Hệ thống tự nhận diện dòng bắt đầu bằng A. B. C. D.</span>
+                            </li>
+                            <li><i class="fas fa-key mr-2 text-gray-400"></i> <strong>Ô bên phải:</strong> Nhập chuỗi đáp án đúng. <br>
+                                <span class="text-xs bg-gray-100 px-2 py-1 rounded border font-mono">1A 2B 3C...</span> hoặc <span class="text-xs bg-gray-100 px-2 py-1 rounded border font-mono">ABC...</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Section 2: Chế độ thi -->
+                    <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+                        <div class="flex items-center mb-3 text-green-700">
+                            <span class="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center font-bold mr-2 text-sm">2</span>
+                            <h4 class="font-bold">Chế độ làm bài</h4>
+                        </div>
+                        <div class="space-y-2 text-sm text-gray-600">
+                            <div class="flex items-start">
+                                <i class="fas fa-clone mt-1 mr-2 text-blue-500"></i>
+                                <div>
+                                    <strong>Làm từng câu:</strong>
+                                    <ul class="list-disc list-inside ml-1 text-xs text-gray-500">
+                                        <li><b>Kiểm tra:</b> Xem ngay đúng/sai.</li>
+                                        <li><b>Hông biết làm:</b> Hiện đáp án (tính sai).</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="flex items-start">
+                                <i class="fas fa-list-ul mt-1 mr-2 text-green-500"></i>
+                                <div>
+                                    <strong>Làm tất cả:</strong> Chọn hết rồi nộp bài 1 lần.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section 3: Lưu trữ -->
+                    <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+                        <div class="flex items-center mb-3 text-orange-700">
+                            <span class="w-6 h-6 rounded-full bg-orange-100 flex items-center justify-center font-bold mr-2 text-sm">3</span>
+                            <h4 class="font-bold">Quản lý bộ đề</h4>
+                        </div>
+                        <p class="text-sm text-gray-600 mb-2">Bộ đề lưu trên trình duyệt (Local Storage).</p>
+                        <div class="flex gap-2">
+                            <span class="text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded border border-blue-200"><i class="fas fa-save mr-1"></i> Lưu tự động</span>
+                            <span class="text-xs bg-purple-50 text-purple-700 px-2 py-1 rounded border border-purple-200"><i class="fas fa-download mr-1"></i> Sao lưu file</span>
+                        </div>
+                    </div>
+
+                    <!-- Section 4: Mẹo -->
+                    <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-200 bg-yellow-50 border-yellow-200">
+                        <div class="flex items-center mb-3 text-yellow-800">
+                            <i class="fas fa-lightbulb text-xl mr-2"></i>
+                            <h4 class="font-bold">Mẹo nhỏ</h4>
+                        </div>
+                        <ul class="list-disc list-inside text-sm text-yellow-900 space-y-1">
+                            <li>Sau khi nộp bài, chọn <b>Làm lại các câu sai</b> để ôn tập.</li>
+                            <li>Dùng nút <b>Sao lưu (Tất cả)</b> để tải file về máy.</li>
+                        </ul>
+                    </div>
+
+                </div>
+            </div>
+            
+            <div class="p-4 bg-gray-100 text-center border-t border-gray-200">
+                <button onclick="document.getElementById('welcomeModal').classList.add('hidden')" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-8 rounded-lg shadow transition hover:-translate-y-1">
+                    Đã hiểu, bắt đầu thôi!
+                </button>
+            </div>
         </div>
     </div>
 
@@ -68,13 +178,60 @@
         </div>
     </div>
 
+    <!-- NAME INPUT POPUP -->
+    <div id="nameInputModal" class="fixed inset-0 bg-black bg-opacity-70 z-[115] hidden flex items-center justify-center p-4 fade-in">
+        <div class="bg-white rounded-xl shadow-2xl p-6 max-w-sm w-full">
+            <div class="text-center mb-4">
+                <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-xl mx-auto mb-3">
+                    <i class="fas fa-pen"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-800">Đặt tên bộ đề</h3>
+            </div>
+            
+            <input type="text" id="quizNameInput" class="w-full p-3 border border-gray-300 rounded-lg mb-4 focus:ring-2 focus:ring-blue-500 focus:outline-none transition" placeholder="Ví dụ: Đề thi thử Toán 2024..." onkeypress="if(event.key === 'Enter') submitQuizName()">
+            
+            <div class="flex gap-3">
+                <button onclick="document.getElementById('nameInputModal').classList.add('hidden'); handleSaveOption(false);" class="w-1/3 bg-gray-100 hover:bg-gray-200 text-gray-600 font-bold py-2 rounded-lg transition">
+                    Hủy
+                </button>
+                <button onclick="submitQuizName()" class="w-2/3 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded-lg shadow transition">
+                    Lưu & Tiếp tục
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PRAYER SUCCESS MODAL (NEW) -->
+    <div id="prayModal" class="fixed inset-0 bg-black bg-opacity-70 z-[130] hidden flex items-center justify-center p-4 fade-in">
+        <div class="bg-white rounded-xl shadow-2xl p-6 max-w-sm w-full text-center border-4 border-yellow-200">
+            <div class="w-16 h-16 bg-yellow-100 text-yellow-600 rounded-full flex items-center justify-center text-3xl mx-auto mb-4 animate-bounce">
+                <i class="fas fa-praying-hands"></i>
+            </div>
+            <h3 class="text-xl font-bold text-gray-800 mb-2">Đã cầu nguyện thành công! 🙏</h3>
+            <p class="text-gray-600 mb-6 text-sm">
+                Bạn đã được cộng điểm may mắn ✨<br>
+                Chúc bạn sẽ có một kì thi thật tốt và đạt kết quả cao! 🍀
+            </p>
+            
+            <button onclick="document.getElementById('prayModal').classList.add('hidden')" class="w-full bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-3 px-4 rounded-lg shadow transition transform hover:-translate-y-1">
+                Nhận may mắn
+            </button>
+        </div>
+    </div>
+
     <!-- Header -->
     <header class="bg-blue-600 text-white p-4 shadow-md sticky top-0 z-50">
         <div class="container mx-auto flex justify-between items-center">
             <h1 class="text-2xl font-bold"><i class="fas fa-graduation-cap mr-2"></i>Tạo Quiz Nhanh</h1>
             <div class="flex gap-2">
+                <button onclick="document.getElementById('welcomeModal').classList.remove('hidden')" class="text-sm bg-blue-500 hover:bg-blue-600 px-3 py-1 rounded transition border border-blue-400">
+                    <i class="fas fa-question-circle mr-1"></i> Hướng dẫn
+                </button>
                 <button onclick="goHome()" class="text-sm bg-blue-500 hover:bg-blue-600 px-3 py-1 rounded transition">
                     <i class="fas fa-home mr-1"></i> Trang chủ
+                </button>
+                <button onclick="document.getElementById('prayModal').classList.remove('hidden')" class="text-sm bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded transition border border-yellow-400 shadow-sm">
+                    <i class="fas fa-praying-hands mr-1"></i> Cầu nguyện
                 </button>
                 <button onclick="resetApp()" class="text-sm bg-blue-700 hover:bg-blue-800 px-3 py-1 rounded transition">
                     <i class="fas fa-redo mr-1"></i> Tạo mới
@@ -88,8 +245,6 @@
         
         <!-- STEP 1: INPUT DATA -->
         <div id="inputSection" class="bg-white rounded-lg shadow-lg p-6 max-w-4xl mx-auto fade-in">
-            <h2 class="text-xl font-semibold mb-4 text-gray-700">Bước 1: Nhập dữ liệu câu hỏi</h2>
-
             <!-- SAVED QUIZZES LIST -->
             <div id="savedQuizzesSection" class="mb-8 p-5 bg-blue-50 rounded-xl border border-blue-100">
                 <h3 class="text-lg font-bold text-gray-800 mb-2 flex items-center justify-between cursor-pointer" onclick="toggleSavedList()">
@@ -121,7 +276,12 @@
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 border-t border-gray-100">
                 <!-- Cột nội dung câu hỏi -->
                 <div class="md:col-span-2 space-y-2">
-                    <label class="block text-sm font-medium text-gray-700">Nội dung câu hỏi & Đáp án</label>
+                    <div class="flex justify-between items-end mb-1">
+                        <label class="block text-sm font-medium text-gray-700">Nội dung câu hỏi & Đáp án</label>
+                        <button onclick="document.getElementById('welcomeModal').classList.remove('hidden')" class="text-xs bg-blue-100 hover:bg-blue-200 text-blue-700 px-3 py-1.5 rounded-full transition border border-blue-200 shadow-sm font-semibold">
+                            <i class="fas fa-question-circle mr-1"></i> Hướng dẫn sử dụng
+                        </button>
+                    </div>
                     <textarea id="rawContent" rows="12" class="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="Câu 1: Thủ đô của Việt Nam là gì?
 A. Hà Nội
 B. Đà Nẵng
@@ -134,7 +294,7 @@ Câu 2: ..."></textarea>
 
                 <!-- Cột đáp án đúng -->
                 <div class="space-y-2">
-                    <label class="block text-sm font-medium text-gray-700">Chuỗi đáp án đúng</label>
+                    <label class="block text-sm font-medium text-gray-700 mt-7">Chuỗi đáp án đúng</label>
                     <textarea id="answerKeyRaw" rows="12" class="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none font-mono text-lg tracking-widest uppercase" placeholder="AC..."></textarea>
                     <div id="keyCount" class="text-right text-sm text-gray-500">Đã nhập: 0 đáp án</div>
                 </div>
@@ -154,12 +314,15 @@ Câu 2: ..."></textarea>
             <h3 id="currentQuizTitle" class="text-lg text-blue-600 font-medium mb-6"></h3>
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <button onclick="startQuiz('single')" class="group p-6 border-2 border-blue-100 hover:border-blue-500 rounded-xl transition hover:bg-blue-50 flex flex-col items-center">
+                <button onclick="startQuiz('single')" class="group p-6 border-2 border-blue-100 hover:border-blue-500 rounded-xl transition hover:bg-blue-50 flex flex-col items-center relative overflow-hidden">
                     <div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-2xl mb-4 group-hover:bg-blue-600 group-hover:text-white transition">
                         <i class="fas fa-clone"></i>
                     </div>
                     <h3 class="text-lg font-bold text-gray-800">Làm từng câu</h3>
-                    <p class="text-sm text-gray-500 mt-2">Hiển thị từng câu hỏi, kiểm tra đáp án ngay lập tức.</p>
+                    <p class="text-sm text-gray-500 mt-2 mb-3">Hiển thị từng câu hỏi, kiểm tra đáp án ngay lập tức.</p>
+                    <span class="text-xs bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full font-bold border border-yellow-200">
+                        <i class="fas fa-star mr-1"></i> Thích hợp ôn thi trắc nghiệm
+                    </span>
                 </button>
 
                 <button onclick="startQuiz('all')" class="group p-6 border-2 border-green-100 hover:border-green-500 rounded-xl transition hover:bg-green-50 flex flex-col items-center">
@@ -254,12 +417,59 @@ Câu 2: ..."></textarea>
         let checkedQuestions = {}; 
         
         const STORAGE_KEY = 'quiz_maker_saved_quizzes';
+        const LOGIN_KEY = 'quiz_app_login_status';
 
         // --- INIT ---
         window.onload = function() {
+            // Check Persistent Login
+            if (localStorage.getItem(LOGIN_KEY) === 'true') {
+                document.getElementById('loginOverlay').classList.add('hidden');
+                document.getElementById('welcomeModal').classList.remove('hidden');
+            } else {
+                document.getElementById('loginOverlay').classList.remove('hidden');
+            }
+            
             loadSavedQuizzes();
         }
         
+        // --- LOGIN LOGIC ---
+        function checkLogin() {
+            const input = document.getElementById('passwordInput');
+            const errorMsg = document.getElementById('loginError');
+            const val = input.value.trim().toLowerCase();
+            
+            if (val === 'thaihaiso1') {
+                // Success: Save login state
+                localStorage.setItem(LOGIN_KEY, 'true');
+                
+                document.getElementById('loginOverlay').classList.add('hidden');
+                document.getElementById('welcomeModal').classList.remove('hidden');
+            } else {
+                // Fail
+                errorMsg.classList.remove('hidden');
+                input.classList.add('border-red-500', 'bg-red-50');
+                input.focus();
+            }
+        }
+        
+        // Login on Enter key
+        document.getElementById('passwordInput').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                checkLogin();
+            }
+        });
+        
+        // Remove error style on input AND Auto-login check
+        document.getElementById('passwordInput').addEventListener('input', function () {
+            this.classList.remove('border-red-500', 'bg-red-50');
+            document.getElementById('loginError').classList.add('hidden');
+
+            // Tự động đăng nhập nếu đúng password
+            if (this.value.trim().toLowerCase() === 'thaihaiso1') {
+                checkLogin();
+            }
+        });
+
         // --- UI UTILS ---
         function toggleSavedList() {
             const container = document.getElementById('savedContainer');
@@ -400,18 +610,34 @@ Câu 2: ..."></textarea>
         function handleSaveOption(shouldSave) {
             document.getElementById('saveConfirmModal').classList.add('hidden');
             
-            let quizName = null;
             if (shouldSave) {
-                setTimeout(() => {
-                    quizName = prompt("Nhập tên bộ đề để lưu:");
-                    if (quizName) {
-                        saveQuizToStorage(quizName, masterQuestions);
-                    }
-                    finalizeSetup(quizName);
-                }, 50);
+                // Show Custom Name Input Modal instead of prompt
+                const nameModal = document.getElementById('nameInputModal');
+                const nameInput = document.getElementById('quizNameInput');
+                
+                nameModal.classList.remove('hidden');
+                nameInput.value = ''; // Reset input
+                
+                // Focus input after a tiny delay to ensure visibility
+                setTimeout(() => nameInput.focus(), 100);
             } else {
                 finalizeSetup(null);
             }
+        }
+
+        function submitQuizName() {
+            const nameInput = document.getElementById('quizNameInput');
+            const quizName = nameInput.value.trim();
+            
+            if (!quizName) {
+                alert("Vui lòng nhập tên cho bộ đề!");
+                nameInput.focus();
+                return;
+            }
+            
+            document.getElementById('nameInputModal').classList.add('hidden');
+            saveQuizToStorage(quizName, masterQuestions);
+            finalizeSetup(quizName);
         }
 
         function finalizeSetup(quizName) {
@@ -588,6 +814,13 @@ Câu 2: ..."></textarea>
             document.getElementById('resultSection').classList.remove('hidden');
         }
 
+        function giveUpSingleQuestion(idx) {
+            if (!questions[idx].correctKey) { alert("Chưa có đáp án đúng cho câu này!"); return; }
+            userAnswers[idx] = 'GIVE_UP'; // Mark as given up
+            checkedQuestions[idx] = true;
+            renderQuiz();
+        }
+
         function renderQuiz() {
             const container = document.getElementById('quizContainer');
             container.innerHTML = '';
@@ -709,6 +942,13 @@ Câu 2: ..."></textarea>
             if (hasCheckBtn && !isChecked) {
                 const footer = document.createElement('div');
                 footer.className = "mt-4 pt-4 border-t border-gray-100 flex justify-end";
+                
+                const btnGiveUp = document.createElement('button');
+                btnGiveUp.className = "bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded transition shadow-sm mr-2";
+                btnGiveUp.innerHTML = '<i class="fas fa-flag mr-1"></i> Hông biết làm';
+                btnGiveUp.onclick = () => giveUpSingleQuestion(index);
+                footer.appendChild(btnGiveUp);
+
                 const btnCheck = document.createElement('button');
                 btnCheck.className = "bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 transition shadow-sm";
                 btnCheck.innerHTML = '<i class="fas fa-search mr-1"></i> Kiểm tra';
@@ -727,6 +967,9 @@ Câu 2: ..."></textarea>
                 if (userSelection === correctKey) {
                     footer.className += " text-green-600";
                     footer.innerHTML = '<i class="fas fa-thumbs-up"></i> Chính xác!';
+                } else if (userSelection === 'GIVE_UP') {
+                    footer.className += " text-red-500";
+                    footer.innerHTML = `<i class="fas fa-heart-broken"></i> Bạn đã bỏ cuộc. Đáp án đúng là ${correctKey}.`;
                 } else if (!userSelection) {
                     footer.className += " text-orange-600";
                     footer.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Bạn chưa chọn đáp án.';
