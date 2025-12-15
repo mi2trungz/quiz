@@ -257,7 +257,7 @@
         <!-- Main Content -->
         <main class="container mx-auto p-4 flex-grow">
             <!-- STEP 1: INPUT DATA -->
-            <div id="inputSection" class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 max-w-4xl mx-auto fade-in">
+            <div id="inputSection" class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 max-w-full mx-auto fade-in transition-all">
                 <!-- SAVED QUIZZES LIST -->
                 <div id="savedQuizzesSection" class="mb-8 p-5 bg-blue-50 dark:bg-gray-700/50 rounded-xl border border-blue-100 dark:border-gray-600">
                     <div class="flex justify-between items-center mb-4">
@@ -277,31 +277,53 @@
                     </div>
                 </div>
                 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-gray-100 dark:border-gray-700">
-                    <!-- Cột nội dung câu hỏi -->
-                    <div class="space-y-2">
-                        <div class="flex justify-between items-center mb-1">
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Nội dung câu hỏi & Đáp án</label>
-                            <button onclick="document.getElementById('welcomeModal').classList.remove('hidden')" class="text-xs bg-blue-100 hover:bg-blue-200 dark:bg-blue-900/50 dark:hover:bg-blue-800 text-blue-700 dark:text-blue-300 px-2 py-1 rounded transition border border-blue-200 dark:border-blue-800 shadow-sm flex items-center">
-                                <i class="fas fa-info-circle mr-1"></i> Hướng dẫn nhập
-                            </button>
+                <!-- Input and Preview Section -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-4 border-t border-gray-100 dark:border-gray-700">
+                    <!-- Left Column: Inputs -->
+                    <div class="space-y-6">
+                        <!-- Cột nội dung câu hỏi -->
+                        <div class="space-y-2">
+                            <div class="flex justify-between items-center mb-1">
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Nội dung câu hỏi & Đáp án</label>
+                                <button onclick="document.getElementById('welcomeModal').classList.remove('hidden')" class="text-xs bg-blue-100 hover:bg-blue-200 dark:bg-blue-900/50 dark:hover:bg-blue-800 text-blue-700 dark:text-blue-300 px-2 py-1 rounded transition border border-blue-200 dark:border-blue-800 shadow-sm flex items-center">
+                                    <i class="fas fa-info-circle mr-1"></i> Hướng dẫn nhập
+                                </button>
+                            </div>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 italic mb-1">* Cứ copy đại vào, AI sẽ tự động nhận dạng câu hỏi và các lựa chọn A B C D.</p>
+                            <textarea id="rawContent" rows="12" class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white placeholder-gray-400" placeholder="Câu 1: ..."></textarea>
                         </div>
-                        <p class="text-xs text-gray-500 dark:text-gray-400 italic mb-1">* Cứ copy đại vào, AI sẽ tự động nhận dạng câu hỏi và các lựa chọn A B C D.</p>
-                        <textarea id="rawContent" rows="12" class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white placeholder-gray-400" placeholder="Câu 1: ..."></textarea>
+
+                        <!-- Cột đáp án đúng -->
+                        <div class="space-y-2">
+                            <div class="flex justify-between items-center mb-1">
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Chuỗi đáp án đúng</label>
+                            </div>
+                            <div class="text-xs text-gray-500 dark:text-gray-400 italic mb-1">
+                                <p>Có thể lựa chọn 1 trong 2 kiểu ghi:</p>
+                                <p class="ml-2">- Kiểu 1: ADCDE</p>
+                                <p class="ml-2">- Kiểu 2: 1A2D3C4D5E</p>
+                            </div>
+                            <textarea id="answerKeyRaw" rows="12" class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none font-mono text-lg tracking-widest uppercase dark:bg-gray-700 dark:text-white" placeholder="AC..."></textarea>
+                            <div id="keyCount" class="text-right text-sm text-gray-500 dark:text-gray-400">Đã nhập: 0 đáp án</div>
+                        </div>
                     </div>
 
-                    <!-- Cột đáp án đúng -->
-                    <div class="space-y-2">
-                        <div class="flex justify-between items-center mb-1">
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Chuỗi đáp án đúng</label>
+                    <!-- Right Column: Live Preview -->
+                    <div class="flex flex-col h-full max-h-[800px]">
+                        <div class="bg-gray-50 dark:bg-gray-900/50 rounded-lg border border-gray-200 dark:border-gray-700 flex flex-col h-full overflow-hidden">
+                            <div class="p-3 bg-gray-100 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center sticky top-0 z-10">
+                                <h3 class="font-bold text-gray-700 dark:text-gray-300 text-sm flex items-center">
+                                    <i class="fas fa-eye mr-2 text-blue-500"></i> Xem trước (Live Preview)
+                                </h3>
+                                <span id="previewCount" class="text-xs bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 px-2 py-0.5 rounded-full">0 câu</span>
+                            </div>
+                            <div id="livePreviewContainer" class="p-4 space-y-4 overflow-y-auto custom-scrollbar flex-grow bg-white dark:bg-gray-900/20">
+                                <div class="text-center py-10 text-gray-400 italic flex flex-col items-center justify-center h-full">
+                                    <i class="fas fa-magic text-3xl mb-3 opacity-50"></i>
+                                    <p>Nhập dữ liệu bên trái để xem trước tại đây...</p>
+                                </div>
+                            </div>
                         </div>
-                        <div class="text-xs text-gray-500 dark:text-gray-400 italic mb-1">
-                            <p>Có thể lựa chọn 1 trong 2 kiểu ghi:</p>
-                            <p class="ml-2">- Kiểu 1: ADCDE</p>
-                            <p class="ml-2">- Kiểu 2: 1A2D3C4D5E</p>
-                        </div>
-                        <textarea id="answerKeyRaw" rows="12" class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none font-mono text-lg tracking-widest uppercase dark:bg-gray-700 dark:text-white" placeholder="AC..."></textarea>
-                        <div id="keyCount" class="text-right text-sm text-gray-500 dark:text-gray-400">Đã nhập: 0 đáp án</div>
                     </div>
                 </div>
 
@@ -318,6 +340,7 @@
 
             <!-- STEP 2 & 3 & 4 (Keep existing structure) -->
             <div id="modeSelectionSection" class="hidden max-w-2xl mx-auto mt-10 bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg text-center fade-in">
+                <!-- ... existing mode selection code ... -->
                 <h2 class="text-2xl font-bold text-gray-800 dark:text-white mb-2">Chọn chế độ làm bài</h2>
                 <h3 id="currentQuizTitle" class="text-lg text-blue-600 dark:text-blue-400 font-medium mb-6"></h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -326,6 +349,7 @@
                         <h3 class="text-lg font-bold text-gray-800 dark:text-white">Làm từng câu</h3>
                         <p class="text-sm text-gray-500 dark:text-gray-400 mt-2 mb-3">Hiển thị từng câu hỏi.</p>
                         <span class="text-xs bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-300 px-3 py-1 rounded-full font-bold border border-yellow-200 dark:border-yellow-700"><i class="fas fa-star mr-1"></i> Thích hợp ôn thi trắc nghiệm</span>
+                        <div class="mt-4 text-xs text-gray-400">Tổng số câu: <span id="totalQuestionsCount" class="font-bold">0</span></div>
                     </button>
                     <button onclick="startQuiz('all')" class="group p-6 border-2 border-green-100 dark:border-gray-600 hover:border-green-500 dark:hover:border-green-500 rounded-xl transition hover:bg-green-50 dark:hover:bg-gray-700 flex flex-col items-center">
                         <div class="w-16 h-16 bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-300 rounded-full flex items-center justify-center text-2xl mb-4 group-hover:bg-green-600 group-hover:text-white transition"><i class="fas fa-list-ul"></i></div>
@@ -336,6 +360,7 @@
             </div>
 
             <div id="quizSection" class="hidden max-w-4xl mx-auto fade-in">
+                <!-- ... existing quiz section code ... -->
                 <div id="quizContainer" class="space-y-6"></div>
                 <div id="listModeControls" class="hidden mt-8 text-center pb-8">
                     <button onclick="submitQuiz()" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-10 rounded shadow-lg text-lg transform transition hover:scale-105"><i class="fas fa-check-circle mr-2"></i> Nộp bài & Chấm điểm</button>
@@ -349,6 +374,7 @@
             </div>
 
             <div id="resultSection" class="hidden max-w-3xl mx-auto mt-8 bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg text-center fade-in">
+                <!-- ... existing result section code ... -->
                 <div class="mb-6"><div id="scoreIcon" class="text-6xl mb-4"></div><h2 class="text-3xl font-bold text-gray-800 dark:text-white mb-2">Kết quả</h2><div class="text-xl text-gray-600 dark:text-gray-300">Đúng <span id="scoreText" class="font-bold text-blue-600 dark:text-blue-400 text-2xl"></span> câu.</div></div>
                 <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-6 mb-8 text-left inline-block w-full max-w-md">
                     <div class="flex justify-between mb-2"><span class="text-green-600 dark:text-green-400 font-semibold">Đúng:</span><span id="countCorrect" class="font-bold dark:text-white">0</span></div>
@@ -374,7 +400,6 @@
         import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, updateProfile } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
         import { getFirestore, doc, setDoc, getDocs, collection, deleteDoc } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
 
-        // Cấu hình Firebase của bạn
         const firebaseConfig = {
             apiKey: "AIzaSyC5rG7hAC5Izw8HWOYQeF8If9uf1iP4STs",
             authDomain: "fastquiz-dfb75.firebaseapp.com",
@@ -388,15 +413,13 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-        // Dùng ID mặc định khi chạy bên ngoài môi trường Canvas
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'fastquiz-web';
 
-        // Initialize Auth: KHÔNG CÒN DÙNG CUSTOM TOKEN NỮA
-        // Chúng ta dựa vào session hoặc đăng nhập thủ công
-
+        // Initialize Auth - NO CUSTOM TOKEN CHECK needed if relying on email/pass mostly
+        
         // Monitor Auth State
         onAuthStateChanged(auth, (user) => {
-            if (user && !user.isAnonymous) { // Only real users
+            if (user && !user.isAnonymous) { 
                 document.getElementById('authOverlay').classList.add('hidden');
                 document.getElementById('app-layout').classList.remove('hidden');
                 document.getElementById('viewToggleBtn').classList.remove('hidden');
@@ -408,7 +431,6 @@
                 }
                 loadCloudQuizzes(user);
             } else {
-                // Not logged in
                 document.getElementById('authOverlay').classList.remove('hidden');
                 document.getElementById('app-layout').classList.add('hidden');
                 document.getElementById('viewToggleBtn').classList.add('hidden');
@@ -416,7 +438,6 @@
             }
         });
 
-        // Global Auth Functions
         window.isRegisterMode = false;
 
         window.toggleAuthMode = function() {
@@ -585,6 +606,76 @@
 
     <!-- App Logic -->
     <script>
+        // --- Live Preview Logic (New) ---
+        const rawContentInput = document.getElementById('rawContent');
+        const answerKeyRawInput = document.getElementById('answerKeyRaw');
+        const livePreviewContainer = document.getElementById('livePreviewContainer');
+        const previewCount = document.getElementById('previewCount');
+
+        function updatePreview() {
+            const rawText = rawContentInput.value;
+            const answerText = answerKeyRawInput.value;
+            
+            // Re-use logic to clean key string
+            const cleanKeys = answerText.replace(/[^a-dA-D]/g, '').toUpperCase().split('');
+            
+            // Reuse parse logic
+            const questions = parseQuestionsText(rawText);
+            
+            // Map keys
+            questions.forEach((q, index) => { 
+                q.correctKey = cleanKeys[index] || null; 
+            });
+
+            // Render
+            previewCount.innerText = `${questions.length} câu`;
+            livePreviewContainer.innerHTML = '';
+
+            if (questions.length === 0) {
+                livePreviewContainer.innerHTML = `
+                    <div class="text-center py-10 text-gray-400 italic flex flex-col items-center justify-center h-full">
+                        <i class="fas fa-magic text-3xl mb-3 opacity-50"></i>
+                        <p>Nhập dữ liệu bên trái để xem trước tại đây...</p>
+                    </div>`;
+                return;
+            }
+
+            questions.forEach((q, idx) => {
+                const card = document.createElement('div');
+                card.className = "bg-white dark:bg-gray-800 p-3 rounded border border-gray-200 dark:border-gray-700 text-sm";
+                
+                let html = `<div class="font-bold mb-2 text-gray-800 dark:text-gray-200">Câu ${idx+1}: ${q.text}</div>`;
+                html += `<div class="grid grid-cols-1 gap-1">`;
+                
+                ['A', 'B', 'C', 'D'].forEach(key => {
+                    if(q.options[key]) {
+                        // Highlight correct if key matches
+                        const isCorrect = (key === q.correctKey);
+                        const bgClass = isCorrect 
+                            ? "bg-green-100 dark:bg-green-900/40 border-green-300 dark:border-green-700 text-green-800 dark:text-green-300" 
+                            : "bg-gray-50 dark:bg-gray-700 border-gray-100 dark:border-gray-600 text-gray-600 dark:text-gray-400";
+                        
+                        html += `
+                            <div class="flex items-center p-2 rounded border ${bgClass}">
+                                <span class="font-bold mr-2 w-5 h-5 rounded-full bg-white dark:bg-gray-600 flex items-center justify-center text-xs shadow-sm">${key}</span>
+                                <span>${q.options[key]}</span>
+                                ${isCorrect ? '<i class="fas fa-check ml-auto text-green-600"></i>' : ''}
+                            </div>
+                        `;
+                    }
+                });
+                html += `</div>`;
+                card.innerHTML = html;
+                livePreviewContainer.appendChild(card);
+            });
+        }
+
+        // Attach listeners
+        rawContentInput.addEventListener('input', updatePreview);
+        answerKeyRawInput.addEventListener('input', updatePreview);
+
+
+        // --- Existing Logic ---
         const THEME_KEY = 'quiz_app_theme';
         if (localStorage.getItem(THEME_KEY) === 'dark') {
             document.documentElement.classList.add('dark');
@@ -671,6 +762,9 @@
         });
 
         function parseQuestionsText(text) {
+            // FIX: Auto-break lines for merged answers like "A. ... B. ..."
+            text = text.replace(/(\s)([A-D])([\.\)])(?=\s)/g, '\n$2$3');
+
             const lines = text.split('\n');
             const result = [];
             let currentQ = null;
