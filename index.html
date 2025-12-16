@@ -220,6 +220,380 @@
       -webkit-text-fill-color: transparent;
       background-clip: text;
     }
+
+    /* ==========================================
+       DESKTOP OPTIMIZATION - Compact Design
+       ========================================== */
+    
+    @media (min-width: 769px) {
+      /* Reduce main container width */
+      main.max-w-6xl {
+        max-width: 1200px;
+      }
+
+      /* Compact header */
+      header {
+        height: 60px;
+      }
+
+      main {
+        padding-top: 100px;
+        padding-bottom: 40px;
+      }
+
+      /* Smaller cards padding */
+      .fs-card {
+        padding: 1.5rem !important;
+      }
+
+      /* Compact buttons */
+      button, .fs-btn-primary {
+        padding: 10px 18px;
+        font-size: 14px;
+      }
+
+      /* Smaller inputs */
+      .fs-input, input, textarea, select {
+        padding: 10px 14px;
+        font-size: 14px;
+      }
+
+      /* Compact text sizes */
+      h1 { font-size: 2.5rem; }
+      h2 { font-size: 1.875rem; }
+      h3 { font-size: 1.5rem; }
+      
+      .text-5xl { font-size: 3rem; }
+      .text-4xl { font-size: 2.25rem; }
+      .text-3xl { font-size: 1.875rem; }
+      .text-2xl { font-size: 1.5rem; }
+      .text-xl { font-size: 1.25rem; }
+
+      /* Reduced spacing */
+      .mb-6 { margin-bottom: 1.25rem; }
+      .mb-8 { margin-bottom: 1.5rem; }
+      .mb-10 { margin-bottom: 2rem; }
+      .mb-16 { margin-bottom: 3rem; }
+
+      .mt-6 { margin-top: 1.25rem; }
+      .mt-8 { margin-top: 1.5rem; }
+
+      .p-8 { padding: 1.5rem; }
+      .p-6 { padding: 1.25rem; }
+
+      /* Compact quiz runner */
+      #runnerArea .bg-white {
+        padding: 1.5rem !important;
+      }
+
+      #runnerArea button {
+        padding: 10px 16px;
+        font-size: 14px;
+      }
+
+      /* Compact profile section */
+      #profileSection .fs-card {
+        padding: 1.5rem !important;
+      }
+
+      /* Compact home cards */
+      #homeSection .fs-card {
+        padding: 1.5rem !important;
+      }
+
+      /* Compact feature selection */
+      #featureSelectionSection .fs-card {
+        padding: 1.5rem !important;
+      }
+
+      /* Compact modals */
+      .fs-modal-panel {
+        padding: 1.5rem !important;
+      }
+
+      /* Compact file manager */
+      #fileManagerSection .fs-card {
+        padding: 1rem !important;
+      }
+
+      /* Smaller gaps in grids */
+      .gap-6 { gap: 1rem; }
+      .gap-4 { gap: 0.75rem; }
+      .gap-3 { gap: 0.625rem; }
+      .gap-2 { gap: 0.5rem; }
+
+      /* Compact header elements */
+      #headerUserNameDisplay {
+        font-size: 13px;
+      }
+
+      header button {
+        padding: 8px 14px;
+        font-size: 13px;
+      }
+
+      /* Compact landing section */
+      #appLandingSection h1 {
+        font-size: 3rem;
+        margin-bottom: 1.5rem;
+      }
+
+      #appLandingSection p {
+        font-size: 1rem;
+        margin-bottom: 2rem;
+      }
+
+      /* Compact quiz options */
+      #runnerArea .grid.gap-3 button {
+        padding: 12px 16px;
+        font-size: 14px;
+      }
+
+      /* Compact results overview */
+      #runnerArea .text-5xl {
+        font-size: 2.5rem;
+      }
+    }
+
+    /* ==========================================
+       MOBILE OPTIMIZATION
+       ========================================== */
+    
+    @media (max-width: 768px) {
+      /* Base Mobile Styles */
+      body {
+        font-size: 15px;
+        -webkit-text-size-adjust: 100%;
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      /* Header Mobile */
+      header {
+        height: 56px;
+        padding: 0 12px;
+      }
+      
+      header .max-w-6xl {
+        padding: 0;
+      }
+
+      /* Main Content Mobile */
+      main {
+        padding-top: 80px;
+        padding-left: 12px;
+        padding-right: 12px;
+        padding-bottom: 20px;
+      }
+
+      /* Cards Mobile */
+      .fs-card {
+        padding: 1.25rem !important;
+        border-radius: 1.5rem !important;
+      }
+
+      /* Buttons Mobile - Larger touch targets */
+      button, .fs-btn-primary, .fs-btn-ghost {
+        min-height: 44px;
+        padding: 12px 20px;
+        font-size: 15px;
+        touch-action: manipulation;
+      }
+
+      /* Inputs Mobile */
+      .fs-input, input, textarea, select {
+        min-height: 48px;
+        padding: 14px 16px;
+        font-size: 16px; /* Prevents zoom on iOS */
+        -webkit-appearance: none;
+        appearance: none;
+        border-radius: 12px;
+      }
+
+      /* Modal Mobile */
+      .fs-modal-panel {
+        margin: 16px;
+        max-height: calc(100vh - 32px);
+        overflow-y: auto;
+        border-radius: 1.5rem !important;
+        padding: 1.5rem !important;
+      }
+
+      /* Quiz Runner Mobile */
+      #runnerArea {
+        padding: 0;
+      }
+
+      #runnerArea .bg-white {
+        padding: 1.25rem !important;
+        border-radius: 1.5rem !important;
+      }
+
+      #runnerArea button {
+        padding: 14px 18px;
+        font-size: 15px;
+        min-height: 48px;
+      }
+
+      /* Options Mobile - Larger touch targets */
+      #runnerArea .grid.gap-3 button,
+      #runnerArea .space-y-2 button {
+        padding: 16px;
+        min-height: 56px;
+        font-size: 15px;
+      }
+
+      /* File Manager Mobile */
+      #fileManagerSection .grid {
+        grid-template-columns: 1fr !important;
+        gap: 0.5rem;
+        padding: 0.75rem;
+      }
+
+      #fileManagerSection .col-span-12 {
+        grid-column: span 12;
+      }
+
+      /* Profile Section Mobile */
+      #profileSection {
+        padding: 0 8px;
+      }
+
+      #profileSection .fs-card {
+        padding: 1.5rem !important;
+      }
+
+      /* Home Section Mobile */
+      #homeSection .grid {
+        grid-template-columns: 1fr !important;
+        gap: 1rem;
+      }
+
+      /* Feature Selection Mobile */
+      #featureSelectionSection .grid {
+        grid-template-columns: 1fr !important;
+        gap: 1rem;
+      }
+
+      /* Results Overview Mobile */
+      #runnerArea .grid.gap-3 {
+        grid-template-columns: 1fr !important;
+        gap: 0.75rem;
+      }
+
+      /* Text Sizes Mobile */
+      h1 { font-size: 2rem !important; }
+      h2 { font-size: 1.5rem !important; }
+      h3 { font-size: 1.25rem !important; }
+      
+      .text-5xl { font-size: 2.5rem !important; }
+      .text-4xl { font-size: 2rem !important; }
+      .text-3xl { font-size: 1.75rem !important; }
+      .text-2xl { font-size: 1.5rem !important; }
+      .text-xl { font-size: 1.25rem !important; }
+
+      /* Spacing Mobile */
+      .mb-6 { margin-bottom: 1rem !important; }
+      .mb-8 { margin-bottom: 1.5rem !important; }
+      .mb-10 { margin-bottom: 2rem !important; }
+      .mb-16 { margin-bottom: 3rem !important; }
+
+      .mt-6 { margin-top: 1rem !important; }
+      .mt-8 { margin-top: 1.5rem !important; }
+
+      .p-8 { padding: 1.5rem !important; }
+      .p-6 { padding: 1.25rem !important; }
+
+      /* Blobs Mobile - Smaller */
+      .blob-1, .blob-2, .blob-3 {
+        width: 200px !important;
+        height: 200px !important;
+      }
+
+      /* Breadcrumbs Mobile */
+      #breadcrumbContainer {
+        font-size: 11px;
+        flex-wrap: wrap;
+        gap: 4px;
+      }
+
+      /* Avatar Mobile */
+      #headerAvatarBtn, #profileAvatarImg {
+        width: 40px;
+        height: 40px;
+      }
+
+      /* Toast Mobile */
+      #toast {
+        left: 16px;
+        right: 16px;
+        max-width: calc(100% - 32px);
+        transform: translateX(0);
+      }
+
+      /* Input Section Mobile */
+      #inputSection .grid {
+        grid-template-columns: 1fr !important;
+        height: auto;
+      }
+
+      #inputSection .fs-card {
+        height: auto;
+        min-height: 300px;
+      }
+
+      /* Membership Modal Mobile */
+      #membershipModal .grid {
+        grid-template-columns: 1fr !important;
+        gap: 1rem;
+      }
+
+      /* Disable hover effects on mobile */
+      .fs-card:hover,
+      button:hover,
+      .fs-btn-primary:hover {
+        transform: none;
+      }
+
+      /* Better scrolling on mobile */
+      * {
+        -webkit-overflow-scrolling: touch;
+      }
+
+      /* Safe area for notched devices */
+      @supports (padding: max(0px)) {
+        body {
+          padding-left: max(12px, env(safe-area-inset-left));
+          padding-right: max(12px, env(safe-area-inset-right));
+        }
+      }
+    }
+
+    /* Extra Small Devices */
+    @media (max-width: 480px) {
+      main {
+        padding-top: 72px;
+        padding-left: 8px;
+        padding-right: 8px;
+      }
+
+      .fs-card {
+        padding: 1rem !important;
+        border-radius: 1.25rem !important;
+      }
+
+      button, .fs-btn-primary {
+        padding: 12px 16px;
+        font-size: 14px;
+      }
+
+      h1 { font-size: 1.75rem !important; }
+      h2 { font-size: 1.375rem !important; }
+      h3 { font-size: 1.125rem !important; }
+
+      .text-5xl { font-size: 2rem !important; }
+      .text-4xl { font-size: 1.75rem !important; }
+      .text-3xl { font-size: 1.5rem !important; }
+    }
   </style>
 
   <script>
