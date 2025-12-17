@@ -122,6 +122,373 @@
       border-color: rgba(255,255,255,0.15);
     }
 
+    /* Feature Selection Cards - Enhanced Hover Effects */
+    #featureSelectionSection .fs-card {
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    #featureSelectionSection .fs-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(139, 92, 246, 0.05));
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      pointer-events: none;
+    }
+
+    #featureSelectionSection .fs-card:hover {
+      transform: translateY(-8px) scale(1.02);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12);
+      border-color: rgba(59, 130, 246, 0.3);
+    }
+
+    html.dark #featureSelectionSection .fs-card:hover {
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+      border-color: rgba(59, 130, 246, 0.4);
+    }
+
+    #featureSelectionSection .fs-card:hover::before {
+      opacity: 1;
+    }
+
+    /* Icon animation on hover */
+    #featureSelectionSection .fs-card:hover .w-16 {
+      transform: scale(1.1) rotate(5deg);
+      transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    #featureSelectionSection .fs-card:hover .w-16 i {
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+
+    /* Button animation on hover */
+    #featureSelectionSection .fs-card:hover button:not(:disabled) {
+      transform: scale(1.05);
+      box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    /* FastQuiz card specific hover */
+    #featureSelectionSection .fs-card:first-child:hover {
+      border-color: rgba(59, 130, 246, 0.4);
+      box-shadow: 0 20px 60px rgba(59, 130, 246, 0.2);
+    }
+
+    html.dark #featureSelectionSection .fs-card:first-child:hover {
+      border-color: rgba(59, 130, 246, 0.5);
+      box-shadow: 0 20px 60px rgba(59, 130, 246, 0.3);
+    }
+
+    /* FastKey card specific hover */
+    #featureSelectionSection .fs-card:nth-child(2):hover {
+      border-color: rgba(168, 85, 247, 0.3);
+      box-shadow: 0 20px 60px rgba(168, 85, 247, 0.15);
+    }
+
+    html.dark #featureSelectionSection .fs-card:nth-child(2):hover {
+      border-color: rgba(168, 85, 247, 0.4);
+      box-shadow: 0 20px 60px rgba(168, 85, 247, 0.25);
+    }
+
+    /* Flashcard card specific hover */
+    #featureSelectionSection .fs-card:nth-child(3):hover {
+      border-color: rgba(34, 197, 94, 0.3);
+      box-shadow: 0 20px 60px rgba(34, 197, 94, 0.15);
+    }
+
+    html.dark #featureSelectionSection .fs-card:nth-child(3):hover {
+      border-color: rgba(34, 197, 94, 0.4);
+      box-shadow: 0 20px 60px rgba(34, 197, 94, 0.25);
+    }
+
+    @keyframes pulse {
+      0%, 100% {
+        transform: scale(1);
+      }
+      50% {
+        transform: scale(1.1);
+      }
+    }
+
+    /* Home Section Cards - Enhanced Hover Effects */
+    #homeSection .fs-card {
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* First card (Tạo bộ đề mới) - Blue gradient card */
+    #homeSection .fs-card:first-child:hover {
+      transform: translateY(-10px) scale(1.03);
+      box-shadow: 0 25px 70px rgba(59, 130, 246, 0.35);
+      filter: brightness(1.05);
+    }
+
+    #homeSection .fs-card:first-child:hover .absolute.right-\[-20px\] {
+      transform: scale(1.1) rotate(10deg);
+      opacity: 0.15;
+      transition: all 0.3s ease;
+    }
+
+    #homeSection .fs-card:first-child:hover .w-12 {
+      transform: scale(1.15) rotate(5deg);
+      transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    #homeSection .fs-card:first-child:hover button {
+      transform: scale(1.05);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    /* Second card (Thư viện của tôi) - White card */
+    #homeSection .fs-card:nth-child(2) {
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    #homeSection .fs-card:nth-child(2):hover {
+      transform: translateY(-10px) scale(1.03);
+      box-shadow: 0 25px 70px rgba(0, 0, 0, 0.12);
+      border-color: rgba(59, 130, 246, 0.5) !important;
+      background: rgba(255, 255, 255, 0.95);
+    }
+
+    html.dark #homeSection .fs-card:nth-child(2):hover {
+      background: rgba(30, 41, 59, 0.8);
+      box-shadow: 0 25px 70px rgba(0, 0, 0, 0.5);
+      border-color: rgba(59, 130, 246, 0.6) !important;
+    }
+
+    #homeSection .fs-card:nth-child(2):hover .w-12 {
+      transform: scale(1.15) rotate(-5deg);
+      background: linear-gradient(135deg, #fb923c, #f97316);
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    #homeSection .fs-card:nth-child(2):hover .w-12 i {
+      color: white;
+      transition: color 0.3s ease;
+    }
+
+    #homeSection .fs-card:nth-child(2):hover button {
+      transform: scale(1.05);
+      background: rgba(59, 130, 246, 0.1);
+      border-color: rgba(59, 130, 246, 0.3);
+      color: #3b82f6;
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    html.dark #homeSection .fs-card:nth-child(2):hover button {
+      background: rgba(59, 130, 246, 0.2);
+      border-color: rgba(59, 130, 246, 0.4);
+      color: #60a5fa;
+    }
+
+    /* PRO upgrade card hover */
+    #homeProUpgradeCard .fs-card:hover {
+      transform: translateY(-8px) scale(1.02);
+      box-shadow: 0 30px 80px rgba(168, 85, 247, 0.4);
+      filter: brightness(1.05);
+    }
+
+    #homeProUpgradeCard .fs-card:hover .absolute.right-\[-30px\] {
+      transform: scale(1.2) rotate(15deg);
+      opacity: 0.25;
+      transition: all 0.3s ease;
+    }
+
+    #homeProUpgradeCard .fs-card:hover button {
+      transform: scale(1.05);
+      box-shadow: 0 8px 25px rgba(255, 255, 255, 0.3);
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    /* App Landing Section - Enhanced Hover Effects */
+    /* Main CTA Button */
+    #appLandingSection button.fs-btn-primary {
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    #appLandingSection button.fs-btn-primary::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.2);
+      transform: translate(-50%, -50%);
+      transition: width 0.6s, height 0.6s;
+    }
+
+    #appLandingSection button.fs-btn-primary:hover {
+      transform: translateY(-4px) scale(1.05);
+      box-shadow: 0 20px 50px rgba(59, 130, 246, 0.4);
+      filter: brightness(1.1);
+    }
+
+    #appLandingSection button.fs-btn-primary:hover::before {
+      width: 300px;
+      height: 300px;
+    }
+
+    #appLandingSection button.fs-btn-primary:hover i {
+      transform: translateX(4px);
+      transition: transform 0.3s ease;
+    }
+
+    /* Landing Section Cards - Enhanced Hover Effects */
+    #appLandingSection .fs-card {
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    #appLandingSection .fs-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(139, 92, 246, 0.05));
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      pointer-events: none;
+    }
+
+    #appLandingSection .fs-card:hover {
+      transform: translateY(-8px) scale(1.02);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12);
+      border-color: rgba(59, 130, 246, 0.3);
+    }
+
+    html.dark #appLandingSection .fs-card:hover {
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+      border-color: rgba(59, 130, 246, 0.4);
+    }
+
+    #appLandingSection .fs-card:hover::before {
+      opacity: 1;
+    }
+
+    /* Icon animation on hover */
+    #appLandingSection .fs-card:hover .w-14 {
+      transform: scale(1.15) rotate(5deg);
+      transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    #appLandingSection .fs-card:hover .w-14 i {
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+
+    /* FastQuiz card specific hover */
+    #appLandingSection .fs-card:first-child:hover {
+      border-color: rgba(59, 130, 246, 0.4);
+      box-shadow: 0 20px 60px rgba(59, 130, 246, 0.2);
+    }
+
+    html.dark #appLandingSection .fs-card:first-child:hover {
+      border-color: rgba(59, 130, 246, 0.5);
+      box-shadow: 0 20px 60px rgba(59, 130, 246, 0.3);
+    }
+
+    /* FastKey card specific hover */
+    #appLandingSection .fs-card:nth-child(2):hover {
+      border-color: rgba(168, 85, 247, 0.3);
+      box-shadow: 0 20px 60px rgba(168, 85, 247, 0.15);
+    }
+
+    html.dark #appLandingSection .fs-card:nth-child(2):hover {
+      border-color: rgba(168, 85, 247, 0.4);
+      box-shadow: 0 20px 60px rgba(168, 85, 247, 0.25);
+    }
+
+    /* Flashcard card specific hover */
+    #appLandingSection .fs-card:nth-child(3):hover {
+      border-color: rgba(34, 197, 94, 0.3);
+      box-shadow: 0 20px 60px rgba(34, 197, 94, 0.15);
+    }
+
+    html.dark #appLandingSection .fs-card:nth-child(3):hover {
+      border-color: rgba(34, 197, 94, 0.4);
+      box-shadow: 0 20px 60px rgba(34, 197, 94, 0.25);
+    }
+
+    /* Badge hover effect */
+    #appLandingSection .inline-block.px-4:hover {
+      transform: scale(1.05);
+      box-shadow: 0 4px 15px rgba(59, 130, 246, 0.2);
+      transition: all 0.3s ease;
+    }
+
+    /* Header Elements - Enhanced Hover Effects */
+    /* Logo hover */
+    header .cursor-pointer:hover {
+      transform: scale(1.02);
+      transition: transform 0.2s ease;
+    }
+
+    header .cursor-pointer:hover .w-10 {
+      transform: scale(1.1) rotate(5deg);
+      transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    /* PRO Badge hover */
+    #headerProBadge {
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      cursor: pointer;
+    }
+
+    #headerProBadge:hover {
+      transform: scale(1.1) translateY(-2px);
+      box-shadow: 0 8px 20px rgba(168, 85, 247, 0.4);
+      filter: brightness(1.1);
+    }
+
+    #headerProBadge:hover i {
+      animation: pulse 1s ease-in-out infinite;
+    }
+
+    /* Logout button hover */
+    #headerLogoutBtn {
+      transition: all 0.3s ease;
+    }
+
+    #headerLogoutBtn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+      filter: brightness(1.1);
+    }
+
+    /* Theme toggle button hover */
+    header button[onclick*="toggleTheme"]:hover {
+      transform: rotate(15deg) scale(1.1);
+      transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    /* Avatar button hover */
+    #headerAvatarBtn:hover {
+      transform: scale(1.1);
+      box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+      transition: all 0.3s ease;
+    }
+
+    /* Back button hover */
+    #backBtn:hover {
+      transform: translateX(-2px);
+      transition: transform 0.2s ease;
+    }
+
     /* Buttons */
     .fs-btn-primary {
       background: linear-gradient(135deg, #2563eb, #4f46e5);
@@ -476,7 +843,7 @@
         -webkit-tap-highlight-color: transparent;
       }
 
-      /* Header Mobile */
+      /* Header Mobile - More compact */
       header {
         height: 56px;
         padding: 0 12px;
@@ -486,9 +853,24 @@
         padding: 0;
       }
 
+      header button {
+        min-width: 44px;
+        min-height: 44px;
+        padding: 8px 12px;
+      }
+
+      #headerUserNameDisplay {
+        display: none !important;
+      }
+
+      #headerLogoutBtn span,
+      #headerLogoutBtn i {
+        font-size: 14px;
+      }
+
       /* Main Content Mobile */
       main {
-        padding-top: 80px;
+        padding-top: 72px;
         padding-left: 12px;
         padding-right: 12px;
         padding-bottom: 20px;
@@ -498,14 +880,25 @@
       .fs-card {
         padding: 1.25rem !important;
         border-radius: 1.5rem !important;
+        margin-bottom: 1rem;
       }
 
       /* Buttons Mobile - Larger touch targets */
       button, .fs-btn-primary, .fs-btn-ghost {
-        min-height: 44px;
-        padding: 12px 20px;
+        min-height: 48px;
+        padding: 14px 20px;
         font-size: 15px;
         touch-action: manipulation;
+        border-radius: 12px;
+      }
+
+      /* Small buttons in header */
+      header button.w-10,
+      header button.h-10 {
+        min-width: 44px;
+        min-height: 44px;
+        width: 44px;
+        height: 44px;
       }
 
       /* Inputs Mobile */
@@ -518,13 +911,26 @@
         border-radius: 12px;
       }
 
-      /* Modal Mobile */
+      textarea {
+        min-height: 120px;
+        line-height: 1.6;
+      }
+
+      /* Modal Mobile - Full screen on small devices */
       .fs-modal-panel {
-        margin: 16px;
-        max-height: calc(100vh - 32px);
+        margin: 0;
+        max-height: 100vh;
+        height: 100vh;
         overflow-y: auto;
-        border-radius: 1.5rem !important;
+        border-radius: 0 !important;
         padding: 1.5rem !important;
+        width: 100% !important;
+        max-width: 100% !important;
+      }
+
+      /* Modal backdrop */
+      .fs-modal-panel + * {
+        margin: 0 !important;
       }
 
       /* Quiz Runner Mobile */
@@ -532,43 +938,90 @@
         padding: 0;
       }
 
-      #runnerArea .bg-white {
-        padding: 1.25rem !important;
-        border-radius: 1.5rem !important;
+      #runnerArea .bg-white,
+      #runnerArea .bg-white.dark\\:bg-gray-800 {
+        padding: 1rem !important;
+        border-radius: 1.25rem !important;
+        margin-bottom: 1rem;
       }
 
       #runnerArea button {
         padding: 14px 18px;
         font-size: 15px;
-        min-height: 48px;
+        min-height: 52px;
+        border-radius: 12px;
+        margin-bottom: 0.5rem;
       }
 
       /* Options Mobile - Larger touch targets */
+      #runnerArea .grid.gap-2 button,
       #runnerArea .grid.gap-3 button,
       #runnerArea .space-y-2 button {
-        padding: 16px;
-        min-height: 56px;
+        padding: 16px 18px;
+        min-height: 60px;
         font-size: 15px;
+        line-height: 1.5;
+        text-align: left;
+      }
+
+      /* Quiz question text */
+      #runnerArea .text-lg,
+      #runnerArea .text-xl {
+        font-size: 16px !important;
+        line-height: 1.6;
       }
 
       /* File Manager Mobile */
+      #fileManagerSection {
+        padding: 0;
+      }
+
+      #fileManagerSection .fs-card {
+        border-radius: 1.25rem !important;
+        padding: 1rem !important;
+      }
+
       #fileManagerSection .grid {
         grid-template-columns: 1fr !important;
         gap: 0.5rem;
-        padding: 0.75rem;
+        padding: 0.5rem;
       }
 
       #fileManagerSection .col-span-12 {
         grid-column: span 12;
       }
 
+      #fileListHeader {
+        padding: 0.75rem 0.5rem !important;
+        font-size: 10px;
+      }
+
+      #fileListBody > div {
+        padding: 0.75rem 0.5rem !important;
+        margin: 0.25rem 0;
+      }
+
+      /* File manager buttons */
+      #fileManagerSection .p-6 > div:first-child {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        padding: 1rem !important;
+      }
+
+      #fileManagerSection .p-6 > div:first-child button {
+        font-size: 13px;
+        padding: 10px 14px;
+        min-height: 44px;
+      }
+
       /* Profile Section Mobile */
       #profileSection {
-        padding: 0 8px;
+        padding: 0;
       }
 
       #profileSection .fs-card {
         padding: 1.5rem !important;
+        border-radius: 1.5rem !important;
       }
 
       /* Home Section Mobile */
@@ -577,10 +1030,90 @@
         gap: 1rem;
       }
 
+      #homeSection .fs-card {
+        padding: 1.5rem !important;
+      }
+
       /* Feature Selection Mobile */
       #featureSelectionSection .grid {
         grid-template-columns: 1fr !important;
         gap: 1rem;
+      }
+
+      #featureSelectionSection .fs-card {
+        padding: 1.5rem !important;
+      }
+
+      /* Landing Section Mobile */
+      #appLandingSection {
+        padding: 1rem 0;
+      }
+
+      #appLandingSection .grid {
+        grid-template-columns: 1fr !important;
+        gap: 1rem;
+      }
+
+      #appLandingSection .fs-card {
+        padding: 1.5rem !important;
+      }
+
+      /* Input Section Mobile */
+      #inputSection {
+        padding: 0;
+      }
+
+      #inputSection .mb-6 {
+        margin-bottom: 1rem !important;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+      }
+
+      #inputSection .mb-6 button {
+        flex: 1 1 auto;
+        min-width: 120px;
+        font-size: 13px;
+        padding: 12px 16px;
+      }
+
+      #inputSection .grid {
+        grid-template-columns: 1fr !important;
+        gap: 1rem;
+        height: auto;
+      }
+
+      #inputSection .fs-card {
+        height: auto;
+        min-height: 300px;
+        padding: 1.25rem !important;
+      }
+
+      #step1Content,
+      #step2Content {
+        height: auto !important;
+        min-height: calc(100vh - 200px);
+      }
+
+      #livePreviewContainer,
+      #answerPreviewContainer {
+        max-height: 400px;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      /* Floating answer input mobile */
+      #floatingAnswerInput {
+        left: 0;
+        right: 0;
+        max-width: 100%;
+        padding: 12px;
+        bottom: 0;
+        transform: none;
+        border-radius: 1.5rem 1.5rem 0 0;
+      }
+
+      #floatingAnswerInput .bg-white {
+        border-radius: 1.25rem;
       }
 
       /* Results Overview Mobile */
@@ -590,9 +1123,9 @@
       }
 
       /* Text Sizes Mobile */
-      h1 { font-size: 2rem !important; }
-      h2 { font-size: 1.5rem !important; }
-      h3 { font-size: 1.25rem !important; }
+      h1 { font-size: 1.75rem !important; line-height: 1.3; }
+      h2 { font-size: 1.5rem !important; line-height: 1.3; }
+      h3 { font-size: 1.25rem !important; line-height: 1.4; }
       
       .text-5xl { font-size: 2.5rem !important; }
       .text-4xl { font-size: 2rem !important; }
@@ -604,7 +1137,7 @@
       .mb-6 { margin-bottom: 1rem !important; }
       .mb-8 { margin-bottom: 1.5rem !important; }
       .mb-10 { margin-bottom: 2rem !important; }
-      .mb-16 { margin-bottom: 3rem !important; }
+      .mb-16 { margin-bottom: 2.5rem !important; }
 
       .mt-6 { margin-top: 1rem !important; }
       .mt-8 { margin-top: 1.5rem !important; }
@@ -614,8 +1147,8 @@
 
       /* Blobs Mobile - Smaller */
       .blob-1, .blob-2, .blob-3 {
-        width: 200px !important;
-        height: 200px !important;
+        width: 150px !important;
+        height: 150px !important;
       }
 
       /* Breadcrumbs Mobile */
@@ -623,6 +1156,12 @@
         font-size: 11px;
         flex-wrap: wrap;
         gap: 4px;
+        line-height: 1.4;
+      }
+
+      #breadcrumbContainer button {
+        padding: 4px 8px;
+        font-size: 11px;
       }
 
       /* Avatar Mobile */
@@ -637,23 +1176,53 @@
         right: 16px;
         max-width: calc(100% - 32px);
         transform: translateX(0);
+        top: 70px;
       }
 
-      /* Input Section Mobile */
-      #inputSection .grid {
+      /* Landing/Auth Section */
+      #landingSection {
+        padding: 1rem 0;
+      }
+
+      #landingSection .fs-card {
+        padding: 1.5rem !important;
+      }
+
+      /* Shared Section Mobile */
+      #sharedSection .fs-card {
+        padding: 1rem !important;
+      }
+
+      #sharedSection .grid {
         grid-template-columns: 1fr !important;
-        height: auto;
-      }
-
-      #inputSection .fs-card {
-        height: auto;
-        min-height: 300px;
       }
 
       /* Membership Modal Mobile */
       #membershipModal .grid {
         grid-template-columns: 1fr !important;
         gap: 1rem;
+      }
+
+      #membershipModal .fs-modal-panel {
+        padding: 1.5rem !important;
+      }
+
+      /* Multi-select actions bar mobile */
+      #multiSelectActionsBar {
+        padding: 1rem !important;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+      }
+
+      #multiSelectActionsBar > div {
+        flex-direction: column;
+        gap: 0.75rem;
+        width: 100%;
+      }
+
+      #multiSelectActionsBar button {
+        width: 100%;
+        justify-content: center;
       }
 
       /* Disable hover effects on mobile */
@@ -663,9 +1232,120 @@
         transform: none;
       }
 
+      /* Disable feature card hover animations on mobile */
+      #featureSelectionSection .fs-card:hover {
+        transform: none !important;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.04) !important;
+      }
+
+      html.dark #featureSelectionSection .fs-card:hover {
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
+      }
+
+      #featureSelectionSection .fs-card:hover .w-16 {
+        transform: none !important;
+      }
+
+      #featureSelectionSection .fs-card:hover button:not(:disabled) {
+        transform: none !important;
+      }
+
+      /* Disable home section card hover animations on mobile */
+      #homeSection .fs-card:hover {
+        transform: none !important;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.04) !important;
+        filter: none !important;
+      }
+
+      html.dark #homeSection .fs-card:hover {
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
+      }
+
+      #homeSection .fs-card:hover .w-12,
+      #homeSection .fs-card:hover .absolute {
+        transform: none !important;
+      }
+
+      #homeSection .fs-card:hover button {
+        transform: none !important;
+      }
+
+      #homeProUpgradeCard .fs-card:hover {
+        transform: none !important;
+        filter: none !important;
+      }
+
+      /* Disable app landing section hover animations on mobile */
+      #appLandingSection button.fs-btn-primary:hover {
+        transform: none !important;
+        box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3) !important;
+        filter: none !important;
+      }
+
+      #appLandingSection button.fs-btn-primary:hover i {
+        transform: none !important;
+      }
+
+      #appLandingSection .fs-card:hover {
+        transform: none !important;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.04) !important;
+      }
+
+      html.dark #appLandingSection .fs-card:hover {
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
+      }
+
+      #appLandingSection .fs-card:hover .w-14 {
+        transform: none !important;
+      }
+
+      #appLandingSection .inline-block.px-4:hover {
+        transform: none !important;
+      }
+
+      /* Disable header hover animations on mobile */
+      header .cursor-pointer:hover {
+        transform: none !important;
+      }
+
+      header .cursor-pointer:hover .w-10 {
+        transform: none !important;
+      }
+
+      #headerProBadge:hover {
+        transform: none !important;
+        box-shadow: none !important;
+        filter: none !important;
+      }
+
+      #headerLogoutBtn:hover {
+        transform: none !important;
+        box-shadow: none !important;
+        filter: none !important;
+      }
+
+      header button[onclick*="toggleTheme"]:hover {
+        transform: none !important;
+      }
+
+      #headerAvatarBtn:hover {
+        transform: none !important;
+        box-shadow: none !important;
+      }
+
+      #backBtn:hover {
+        transform: none !important;
+      }
+
       /* Better scrolling on mobile */
       * {
         -webkit-overflow-scrolling: touch;
+      }
+
+      /* Prevent text selection on buttons */
+      button {
+        -webkit-user-select: none;
+        user-select: none;
       }
 
       /* Safe area for notched devices */
@@ -674,15 +1354,71 @@
           padding-left: max(12px, env(safe-area-inset-left));
           padding-right: max(12px, env(safe-area-inset-right));
         }
+
+        main {
+          padding-top: max(72px, calc(72px + env(safe-area-inset-top)));
+        }
+
+        header {
+          padding-top: env(safe-area-inset-top);
+        }
+      }
+
+      /* Quiz runner mode picker mobile */
+      #runnerArea .max-w-4xl {
+        padding: 0.5rem;
+      }
+
+      #runnerArea button[onclick*="startRunner"] {
+        width: 100% !important;
+        max-width: 100%;
+        height: auto;
+        min-height: 200px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+      }
+
+      /* Quiz runner controls mobile */
+      #runnerArea .flex.items-center.justify-between {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+      }
+
+      #runnerArea .flex.items-center.justify-between button {
+        flex: 1 1 auto;
+        min-width: 100px;
+      }
+
+      /* Context menu mobile */
+      #itemActionModal .fs-modal-panel {
+        max-width: 90%;
+        margin: auto;
+      }
+
+      /* Save modal mobile */
+      #saveQuizModal .fs-modal-panel,
+      #renameModal .fs-modal-panel,
+      #moveFileModal .fs-modal-panel,
+      #moveSelectedModal .fs-modal-panel,
+      #colorModal .fs-modal-panel,
+      #shareModal .fs-modal-panel,
+      #createFolderModal .fs-modal-panel {
+        max-width: 95%;
+        margin: auto;
       }
     }
 
     /* Extra Small Devices */
     @media (max-width: 480px) {
       main {
-        padding-top: 72px;
+        padding-top: 68px;
         padding-left: 8px;
         padding-right: 8px;
+      }
+
+      header {
+        height: 52px;
+        padding: 0 8px;
       }
 
       .fs-card {
@@ -693,15 +1429,109 @@
       button, .fs-btn-primary {
         padding: 12px 16px;
         font-size: 14px;
+        min-height: 48px;
       }
 
-      h1 { font-size: 1.75rem !important; }
-      h2 { font-size: 1.375rem !important; }
-      h3 { font-size: 1.125rem !important; }
+      header button {
+        min-width: 40px;
+        min-height: 40px;
+        padding: 6px 10px;
+      }
+
+      h1 { font-size: 1.5rem !important; line-height: 1.2; }
+      h2 { font-size: 1.25rem !important; line-height: 1.3; }
+      h3 { font-size: 1.125rem !important; line-height: 1.4; }
 
       .text-5xl { font-size: 2rem !important; }
       .text-4xl { font-size: 1.75rem !important; }
       .text-3xl { font-size: 1.5rem !important; }
+      .text-2xl { font-size: 1.25rem !important; }
+
+      /* Smaller padding for very small screens */
+      .p-8 { padding: 1rem !important; }
+      .p-6 { padding: 1rem !important; }
+
+      /* Input section - stack vertically */
+      #inputSection .mb-6 {
+        flex-direction: column;
+      }
+
+      #inputSection .mb-6 button {
+        width: 100%;
+        font-size: 12px;
+      }
+
+      /* Quiz runner buttons - full width */
+      #runnerArea button {
+        width: 100%;
+        margin-bottom: 0.75rem;
+      }
+
+      #runnerArea .flex.items-center.justify-between {
+        flex-direction: column;
+        gap: 0.75rem;
+      }
+
+      #runnerArea .flex.items-center.justify-between > div {
+        width: 100%;
+      }
+
+      /* File manager - more compact */
+      #fileManagerSection .p-6 > div:first-child {
+        padding: 0.75rem !important;
+      }
+
+      #fileManagerSection .p-6 > div:first-child button {
+        font-size: 12px;
+        padding: 8px 12px;
+        min-height: 40px;
+      }
+
+      /* Modal - almost full screen */
+      .fs-modal-panel {
+        padding: 1.25rem !important;
+      }
+
+      /* Toast - smaller */
+      #toast {
+        left: 12px;
+        right: 12px;
+        top: 65px;
+        font-size: 13px;
+      }
+
+      /* Avatar smaller */
+      #headerAvatarBtn {
+        width: 36px;
+        height: 36px;
+      }
+
+      /* Blobs even smaller */
+      .blob-1, .blob-2, .blob-3 {
+        width: 120px !important;
+        height: 120px !important;
+      }
+    }
+
+    /* Landscape mobile optimization */
+    @media (max-width: 768px) and (orientation: landscape) {
+      main {
+        padding-top: 60px;
+      }
+
+      header {
+        height: 50px;
+      }
+
+      #inputSection .grid {
+        grid-template-columns: 1fr 1fr !important;
+        gap: 1rem;
+      }
+
+      #livePreviewContainer,
+      #answerPreviewContainer {
+        max-height: 300px;
+      }
     }
   </style>
 
@@ -1665,11 +2495,14 @@
 
     // --- QUIZ RUNNER UI GENERATION ---
     window.renderRunnerModePicker = function () {
-      // Clear game timer if exists
+      // Clear all timers if exists
       const s = window.runnerState;
-      if (s && s.timerInterval) {
-        clearInterval(s.timerInterval);
-        s.timerInterval = null;
+      if (s) {
+        if (s.timerInterval) {
+          clearInterval(s.timerInterval);
+          s.timerInterval = null;
+        }
+        window.stopElapsedTimer();
       }
       
       const area = document.getElementById('runnerArea');
@@ -1697,6 +2530,14 @@
               <h3 class="text-xl font-bold mb-3">Thi thử</h3>
               <p class="text-gray-500 dark:text-gray-400 text-sm leading-relaxed">Làm hết một lượt rồi nộp bài. Mô phỏng phòng thi thực tế.</p>
             </button>
+
+            <button class="fs-card p-6 rounded-[2rem] text-center cursor-pointer w-[280px] h-[280px] flex flex-col items-center justify-center transition-all duration-300 hover:scale-105 hover:shadow-xl hover:border-green-300 dark:hover:border-green-600" onclick="window.startPreview()">
+              <div class="w-16 h-16 rounded-2xl bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 flex items-center justify-center text-3xl mb-4 transition-transform duration-300 hover:scale-110">
+                <i class="fas fa-eye"></i>
+              </div>
+              <h3 class="text-xl font-bold mb-3">Xem trước</h3>
+              <p class="text-gray-500 dark:text-gray-400 text-sm leading-relaxed">Xem tất cả câu hỏi và đáp án đúng. Phù hợp để ôn tập nhanh.</p>
+            </button>
           </div>
         </div>
       `;
@@ -1707,6 +2548,12 @@
       if (!area) return;
       const s = window.runnerState;
       if (!s) { window.renderRunnerModePicker(); return; }
+      
+      // Preview mode được xử lý riêng
+      if (s.mode === 'preview') {
+        window.renderPreview();
+        return;
+      }
 
       // Exam mode: hiển thị tất cả câu hỏi cùng lúc (chưa submit)
       if (s.mode === 'exam' && !s.submitted) {
@@ -1751,11 +2598,25 @@
           `;
         });
         
+        const elapsedTimeFormatted = window.formatElapsedTime(s.elapsedTime || 0);
+        const pauseIcon = s.isPaused ? 'fa-play' : 'fa-pause';
+        const pauseText = s.isPaused ? 'Tiếp tục' : 'Tạm dừng';
+        
         area.innerHTML = `
           <div class="max-w-4xl mx-auto">
-            <div class="flex items-center justify-between mb-4">
-              <span class="text-xs font-bold uppercase tracking-wider text-gray-400">Đã trả lời: ${answeredCount}/${s.questions.length}</span>
+            <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
+              <div class="flex items-center gap-4">
+                <span class="text-xs font-bold uppercase tracking-wider text-gray-400">Đã trả lời: ${answeredCount}/${s.questions.length}</span>
+                <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800">
+                  <i class="fas fa-clock text-blue-600 dark:text-blue-400 text-sm"></i>
+                  <span class="text-sm font-bold text-blue-700 dark:text-blue-300">${elapsedTimeFormatted}</span>
+                </div>
+              </div>
               <div class="flex gap-2">
+                <button onclick="window.togglePauseTimer()" class="px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 text-xs font-semibold flex items-center gap-1.5">
+                  <i class="fas ${pauseIcon}"></i>
+                  <span>${pauseText}</span>
+                </button>
                 <button onclick="window.renderRunnerModePicker()" class="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"><i class="fas fa-arrow-rotate-left mr-1"></i> Mode</button>
               </div>
             </div>
@@ -1820,18 +2681,30 @@
           </button>`;
         }).join('');
 
+        const elapsedTimeFormatted = window.formatElapsedTime(s.elapsedTime || 0);
+        const pauseIcon = s.isPaused ? 'fa-play' : 'fa-pause';
+        const pauseText = s.isPaused ? 'Tiếp tục' : 'Tạm dừng';
+        
         area.innerHTML = `
           <div class=" max-w-3xl mx-auto">
-            <div class="flex items-center justify-between mb-4">
-              <div class="flex items-center gap-4">
+            <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
+              <div class="flex items-center gap-4 flex-wrap">
                 <div class="px-4 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold shadow-lg">
                   <i class="fas fa-star mr-2"></i>${score} điểm
                 </div>
                 ${streak > 0 ? `<div class="px-4 py-2 rounded-xl bg-orange-500 text-white font-bold shadow-lg animate-pulse">
                   <i class="fas fa-fire mr-2"></i>Streak x${streak}
                 </div>` : ''}
+                <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800">
+                  <i class="fas fa-clock text-blue-600 dark:text-blue-400 text-sm"></i>
+                  <span class="text-sm font-bold text-blue-700 dark:text-blue-300">${elapsedTimeFormatted}</span>
+                </div>
               </div>
               <div class="flex items-center gap-2">
+                <button onclick="window.togglePauseTimer()" class="px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 text-xs font-semibold flex items-center gap-1.5">
+                  <i class="fas ${pauseIcon}"></i>
+                  <span>${pauseText}</span>
+                </button>
                 <button onclick="window.renderRunnerModePicker()" class="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"><i class="fas fa-arrow-rotate-left mr-1"></i> Mode</button>
               </div>
             </div>
@@ -1922,12 +2795,30 @@
       const allChecked = s.mode === 'practice' && !s.submitted && s.questions.every((q, idx) => s.checked[idx] === true);
       const showResultsBtn = allChecked; // Hiển thị nút "Xem kết quả" khi hoàn thành
 
+      const elapsedTimeFormatted = window.formatElapsedTime(s.elapsedTime || 0);
+      const pauseIcon = s.isPaused ? 'fa-play' : 'fa-pause';
+      const pauseText = s.isPaused ? 'Tiếp tục' : 'Tạm dừng';
+      
       area.innerHTML = `
         <div class=" max-w-3xl mx-auto">
-          <div class="flex items-center justify-between mb-4">
-            <span class="text-xs font-bold uppercase tracking-wider text-gray-400">Câu hỏi ${s.currentIndex + 1}/${s.questions.length}</span>
+          <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
+            <div class="flex items-center gap-4">
+              <span class="text-xs font-bold uppercase tracking-wider text-gray-400">Câu hỏi ${s.currentIndex + 1}/${s.questions.length}</span>
+              ${!s.submitted ? `
+                <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800">
+                  <i class="fas fa-clock text-blue-600 dark:text-blue-400 text-sm"></i>
+                  <span class="text-sm font-bold text-blue-700 dark:text-blue-300">${elapsedTimeFormatted}</span>
+                </div>
+              ` : ''}
+            </div>
             <div class="flex gap-2">
                  ${s.submitted ? `<span class="px-2 py-1 rounded bg-blue-100 text-blue-700 text-xs font-bold">Đã nộp bài</span>` : ''}
+                 ${!s.submitted ? `
+                   <button onclick="window.togglePauseTimer()" class="px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 text-xs font-semibold flex items-center gap-1.5">
+                     <i class="fas ${pauseIcon}"></i>
+                     <span>${pauseText}</span>
+                   </button>
+                 ` : ''}
                  <button onclick="window.renderRunnerModePicker()" class="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"><i class="fas fa-arrow-rotate-left mr-1"></i> Mode</button>
             </div>
           </div>
@@ -2162,6 +3053,139 @@
       }, 300);
     };
 
+    window.startPreview = function () {
+      // Dừng tất cả timer nếu có
+      const oldState = window.runnerState;
+      if (oldState) {
+        if (oldState.timerInterval) {
+          clearInterval(oldState.timerInterval);
+        }
+        window.stopElapsedTimer();
+      }
+      
+      // Hiệu ứng fade out cho màn hình chọn chế độ
+      const area = document.getElementById('runnerArea');
+      if (area) {
+        area.style.transition = 'opacity 0.3s ease-out, transform 0.3s ease-out';
+        area.style.opacity = '0';
+        area.style.transform = 'translateY(-20px)';
+      }
+      
+      setTimeout(() => {
+        const pool = (window.runningQuiz?.questions || []).map((q, idx) => ({
+          origIndex: idx, text: q.text || '', options: q.options || {}, correctKey: (q.correctKey || '').toUpperCase() || null,
+        }));
+        
+        window.runnerState = {
+          mode: 'preview',
+          questions: pool,
+          submitted: true, // Đánh dấu là preview mode
+          elapsedTime: 0,
+          elapsedTimerInterval: null,
+          isPaused: false
+        };
+        
+        window.renderPreview();
+        
+        // Fade in animation
+        setTimeout(() => {
+          if (area) {
+            area.style.transition = 'opacity 0.4s ease-in, transform 0.4s ease-in';
+            area.style.opacity = '1';
+            area.style.transform = 'translateY(0)';
+          }
+        }, 50);
+      }, 300);
+    };
+
+    window.renderPreview = function () {
+      const area = document.getElementById('runnerArea');
+      if (!area) return;
+      const s = window.runnerState;
+      if (!s || s.mode !== 'preview') return;
+      
+      let allQuestionsHTML = '';
+      s.questions.forEach((q, idx) => {
+        // Đảm bảo thứ tự A, B, C, D
+        const orderedKeys = ['A', 'B', 'C', 'D'].filter(k => q.options && q.options[k]);
+        
+        const optionsHTML = orderedKeys.map((key) => {
+          const text = q.options[key];
+          const isCorrect = q.correctKey && key === q.correctKey;
+          
+          let baseStyle = "w-full text-left p-2 rounded-lg border-2 flex items-start gap-2 relative ";
+          let stateStyle = "border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300";
+          let icon = `<div class="w-5 h-5 rounded-full border border-gray-300 dark:border-gray-600 flex items-center justify-center text-xs font-bold text-gray-500 shrink-0">${key}</div>`;
+          
+          if (isCorrect) {
+            stateStyle = "border-green-500 bg-green-50 dark:bg-green-900/20 text-green-800 dark:text-green-200";
+            icon = `<div class="w-5 h-5 rounded-full bg-green-500 border border-green-500 flex items-center justify-center text-xs font-bold text-white shrink-0"><i class="fas fa-check"></i></div>`;
+          }
+          
+          return `<div class="${baseStyle} ${stateStyle}">
+            <div class="shrink-0">${icon}</div>
+            <div class="text-sm font-medium text-gray-800 dark:text-gray-100 leading-normal flex-1 min-w-0 ${isCorrect ? 'pr-24' : ''}">${text}</div>
+            ${isCorrect ? '<span class="absolute top-2 right-2 px-2 py-1 rounded bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs font-bold whitespace-nowrap">Đáp án đúng</span>' : ''}
+          </div>`;
+        }).join('');
+        
+        allQuestionsHTML += `
+          <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-700 mb-4 hover:shadow-xl transition-shadow">
+            <div class="flex items-start gap-3 mb-5">
+              <span class="px-4 py-2 rounded-xl bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-sm font-bold shrink-0 border border-blue-200 dark:border-blue-800">Câu ${idx + 1}</span>
+              <div class="text-base font-bold text-gray-900 dark:text-white leading-relaxed flex-1">${q.text}</div>
+            </div>
+            <div class="grid gap-2">
+              ${optionsHTML}
+            </div>
+          </div>
+        `;
+      });
+      
+      area.innerHTML = `
+        <div class="max-w-4xl mx-auto">
+          <div class="flex items-center justify-between mb-6 flex-wrap gap-4">
+            <div>
+              <div class="flex items-center gap-3 mb-2">
+                <div class="w-10 h-10 rounded-xl bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 flex items-center justify-center">
+                  <i class="fas fa-eye"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Xem trước đề thi</h2>
+              </div>
+              <p class="text-sm text-gray-500 ml-13">Tổng cộng <span class="font-bold text-blue-600">${s.questions.length}</span> câu hỏi</p>
+            </div>
+            <div class="flex gap-2">
+              <button onclick="window.renderRunnerModePicker()" class="px-4 py-2 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-semibold hover:bg-gray-200 dark:hover:bg-gray-700 flex items-center gap-2 transition-all">
+                <i class="fas fa-arrow-rotate-left"></i>
+                <span>Chọn chế độ</span>
+              </button>
+            </div>
+          </div>
+          
+          <div class="mb-6 p-4 rounded-xl bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 border border-green-200 dark:border-green-800">
+            <div class="flex items-center gap-3 text-sm">
+              <div class="w-8 h-8 rounded-full bg-green-500 text-white flex items-center justify-center flex-shrink-0">
+                <i class="fas fa-info-circle text-xs"></i>
+              </div>
+              <div class="text-gray-700 dark:text-gray-300">
+                <span class="font-bold text-green-600 dark:text-green-400">Đáp án đúng</span> đã được <span class="font-bold">bôi xanh</span> và đánh dấu với icon <i class="fas fa-check-circle text-green-500"></i>
+              </div>
+            </div>
+          </div>
+          
+          <div class="space-y-3">
+            ${allQuestionsHTML}
+          </div>
+          
+          <div class="mt-6 text-center">
+            <button onclick="window.renderRunnerModePicker()" class="px-6 py-3 rounded-xl bg-blue-600 text-white font-bold hover:bg-blue-700 shadow-lg shadow-blue-500/20">
+              <i class="fas fa-arrow-left mr-2"></i>Quay lại chọn chế độ
+            </button>
+          </div>
+        </div>
+      `;
+    };
+
     window.startRunnerWithPool = function (mode, pool) {
       const qs = pool || [];
       const gameState = mode === 'game' ? {
@@ -2181,8 +3205,17 @@
         score: null, 
         wrongSet: new Set(),
         resultsShown: false,
+        elapsedTime: 0, // Thời gian đã trôi qua (giây)
+        elapsedTimerInterval: null, // Interval cho elapsed timer
+        isPaused: false, // Trạng thái tạm dừng
+        startTime: Date.now(), // Thời điểm bắt đầu
+        pausedTime: 0, // Tổng thời gian đã tạm dừng
+        pauseStartTime: null, // Thời điểm bắt đầu tạm dừng
         ...gameState
       };
+      
+      // Start elapsed timer for all modes
+      window.startElapsedTimer();
       
       // Start timer for game mode
       if (mode === 'game') {
@@ -2213,6 +3246,110 @@
       s.selected[s.currentIndex] = key;
       if (s.mode === 'practice' && s.checked[s.currentIndex]) s.checked[s.currentIndex] = false;
       window.renderRunner();
+    };
+
+    // Elapsed Timer Functions
+    window.formatElapsedTime = function (seconds) {
+      const hours = Math.floor(seconds / 3600);
+      const minutes = Math.floor((seconds % 3600) / 60);
+      const secs = seconds % 60;
+      
+      if (hours > 0) {
+        return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+      }
+      return `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    };
+
+    window.startElapsedTimer = function () {
+      const s = window.runnerState;
+      if (!s || s.submitted) return;
+      
+      // Clear existing timer
+      if (s.elapsedTimerInterval) {
+        clearInterval(s.elapsedTimerInterval);
+      }
+      
+      // Tính thời gian đã trôi qua từ khi bắt đầu (trừ thời gian đã tạm dừng)
+      const updateTimer = () => {
+        if (s.isPaused) return; // Không cập nhật khi đang tạm dừng
+        
+        const now = Date.now();
+        const elapsed = Math.floor((now - s.startTime - s.pausedTime) / 1000);
+        s.elapsedTime = Math.max(0, elapsed);
+        window.renderRunner();
+      };
+      
+      // Cập nhật ngay lập tức
+      updateTimer();
+      
+      // Cập nhật mỗi giây
+      s.elapsedTimerInterval = setInterval(updateTimer, 1000);
+    };
+
+    window.pauseElapsedTimer = function () {
+      const s = window.runnerState;
+      if (!s || s.isPaused || s.submitted) return;
+      
+      s.isPaused = true;
+      s.pauseStartTime = Date.now();
+      
+      // Dừng elapsed timer interval
+      if (s.elapsedTimerInterval) {
+        clearInterval(s.elapsedTimerInterval);
+        s.elapsedTimerInterval = null;
+      }
+      
+      // Dừng game timer nếu là game mode
+      if (s.mode === 'game' && s.timerInterval) {
+        clearInterval(s.timerInterval);
+        s.timerInterval = null;
+      }
+      
+      window.renderRunner();
+    };
+
+    window.resumeElapsedTimer = function () {
+      const s = window.runnerState;
+      if (!s || !s.isPaused || s.submitted) return;
+      
+      // Tính thời gian đã tạm dừng
+      if (s.pauseStartTime) {
+        s.pausedTime += Date.now() - s.pauseStartTime;
+        s.pauseStartTime = null;
+      }
+      
+      s.isPaused = false;
+      
+      // Tiếp tục elapsed timer
+      window.startElapsedTimer();
+      
+      // Tiếp tục game timer nếu là game mode
+      if (s.mode === 'game') {
+        window.startGameTimer();
+      }
+      
+      window.renderRunner();
+    };
+
+    window.togglePauseTimer = function () {
+      const s = window.runnerState;
+      if (!s || s.submitted) return;
+      
+      if (s.isPaused) {
+        window.resumeElapsedTimer();
+      } else {
+        window.pauseElapsedTimer();
+      }
+    };
+
+    window.stopElapsedTimer = function () {
+      const s = window.runnerState;
+      if (!s) return;
+      
+      if (s.elapsedTimerInterval) {
+        clearInterval(s.elapsedTimerInterval);
+        s.elapsedTimerInterval = null;
+      }
     };
 
     // Game mode functions
@@ -2333,6 +3470,9 @@
         s.timerInterval = null;
       }
       
+      // Dừng elapsed timer
+      window.stopElapsedTimer();
+      
       s.submitted = true;
       const total = s.questions.length;
       const correct = total - s.wrongSet.size;
@@ -2437,6 +3577,10 @@
         else s.wrongSet.add(s.questions[i].origIndex ?? i);
       }
       s.score = score; s.submitted = true;
+      
+      // Dừng elapsed timer khi submit
+      window.stopElapsedTimer();
+      
       if ((score/s.questions.length) >= 0.8 && typeof confetti === 'function') confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } });
       window.renderRunner();
       // Tự động mở kết quả sau khi nộp bài
@@ -2457,10 +3601,13 @@
     };
     window.redoAll = function() { window.startRunner(window.runnerState?.mode || 'practice'); };
     window.backToManager = function() { 
-      // Clear game timer if exists
+      // Clear all timers if exists
       const s = window.runnerState;
-      if (s && s.timerInterval) {
-        clearInterval(s.timerInterval);
+      if (s) {
+        if (s.timerInterval) {
+          clearInterval(s.timerInterval);
+        }
+        window.stopElapsedTimer();
       }
       window.runnerState = null; 
       window.openManageQuizzes(); 
@@ -3596,12 +4743,12 @@
              <p class="text-gray-500 text-sm leading-relaxed">Tạo đề nhanh từ văn bản, hỗ trợ nhiều chế độ thi và tự động chấm điểm.</p>
           </div>
           
-          <div class="fs-card p-6 rounded-[2rem]  opacity-75 grayscale hover:grayscale-0 hover:opacity-100 cursor-not-allowed" onclick="window.showComingSoon('FastNote')">
+          <div class="fs-card p-6 rounded-[2rem]  opacity-75 grayscale hover:grayscale-0 hover:opacity-100 cursor-not-allowed" onclick="window.showComingSoon('FastKey')">
              <div class="w-14 h-14 rounded-2xl bg-purple-100 dark:bg-purple-900/30 text-purple-600 flex items-center justify-center text-2xl mb-5">
-                <i class="fas fa-sticky-note"></i>
+                <i class="fas fa-key"></i>
              </div>
-             <h3 class="text-xl font-bold mb-2">FastNote <span class="text-[10px] bg-gray-200 dark:bg-gray-700 px-2 py-0.5 rounded text-gray-500 align-middle ml-2">SOON</span></h3>
-             <p class="text-gray-500 text-sm leading-relaxed">Ghi chú bài giảng thông minh, tự động tóm tắt ý chính (AI Support).</p>
+             <h3 class="text-xl font-bold mb-2">FastKey <span class="text-[10px] bg-gray-200 dark:bg-gray-700 px-2 py-0.5 rounded text-gray-500 align-middle ml-2">SOON</span></h3>
+             <p class="text-gray-500 text-sm leading-relaxed">Tự động tra đáp án và điền form lấy điểm rèn luyện.</p>
           </div>
 
           <div class="fs-card p-6 rounded-[2rem]  opacity-75 grayscale hover:grayscale-0 hover:opacity-100 cursor-not-allowed" onclick="window.showComingSoon('FastFlash')">
@@ -3634,12 +4781,12 @@
              <button class="w-full px-6 py-3 rounded-xl bg-blue-600 text-white font-bold shadow-lg shadow-blue-500/20 ">Chọn</button>
           </div>
           
-          <div class="fs-card p-8 rounded-[2rem]  opacity-75 grayscale hover:grayscale-0 hover:opacity-100 cursor-not-allowed" onclick="window.showComingSoon('FastNote')">
+          <div class="fs-card p-8 rounded-[2rem]  opacity-75 grayscale hover:grayscale-0 hover:opacity-100 cursor-not-allowed" onclick="window.showComingSoon('FastKey')">
              <div class="w-16 h-16 rounded-2xl bg-purple-100 dark:bg-purple-900/30 text-purple-600 flex items-center justify-center text-3xl mb-5 mx-auto">
-                <i class="fas fa-sticky-note"></i>
+                <i class="fas fa-key"></i>
              </div>
-             <h3 class="text-2xl font-bold mb-3 text-center text-gray-900 dark:text-white">FastNote <span class="text-[10px] bg-gray-200 dark:bg-gray-700 px-2 py-0.5 rounded text-gray-500 align-middle ml-2">SOON</span></h3>
-             <p class="text-gray-500 text-sm leading-relaxed text-center mb-6">Ghi chú bài giảng thông minh, tự động tóm tắt ý chính (AI Support).</p>
+             <h3 class="text-2xl font-bold mb-3 text-center text-gray-900 dark:text-white">FastKey <span class="text-[10px] bg-gray-200 dark:bg-gray-700 px-2 py-0.5 rounded text-gray-500 align-middle ml-2">SOON</span></h3>
+             <p class="text-gray-500 text-sm leading-relaxed text-center mb-6">Tự động tra đáp án và điền form lấy điểm rèn luyện.</p>
              <button class="w-full px-6 py-3 rounded-xl bg-gray-300 dark:bg-gray-700 text-gray-500 font-bold cursor-not-allowed" disabled>Sắp ra mắt</button>
           </div>
 
