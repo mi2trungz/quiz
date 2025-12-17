@@ -196,15 +196,15 @@
       box-shadow: 0 20px 60px rgba(168, 85, 247, 0.25);
     }
 
-    /* Flashcard card specific hover */
+    /* Feature Suggestion card specific hover */
     #featureSelectionSection .fs-card:nth-child(3):hover {
-      border-color: rgba(34, 197, 94, 0.3);
-      box-shadow: 0 20px 60px rgba(34, 197, 94, 0.15);
+      border-color: rgba(249, 115, 22, 0.3);
+      box-shadow: 0 20px 60px rgba(249, 115, 22, 0.15);
     }
 
     html.dark #featureSelectionSection .fs-card:nth-child(3):hover {
-      border-color: rgba(34, 197, 94, 0.4);
-      box-shadow: 0 20px 60px rgba(34, 197, 94, 0.25);
+      border-color: rgba(249, 115, 22, 0.4);
+      box-shadow: 0 20px 60px rgba(249, 115, 22, 0.25);
     }
 
     @keyframes pulse {
@@ -413,15 +413,15 @@
       box-shadow: 0 20px 60px rgba(168, 85, 247, 0.25);
     }
 
-    /* Flashcard card specific hover */
+    /* Feature Suggestion card specific hover */
     #appLandingSection .fs-card:nth-child(3):hover {
-      border-color: rgba(34, 197, 94, 0.3);
-      box-shadow: 0 20px 60px rgba(34, 197, 94, 0.15);
+      border-color: rgba(249, 115, 22, 0.3);
+      box-shadow: 0 20px 60px rgba(249, 115, 22, 0.15);
     }
 
     html.dark #appLandingSection .fs-card:nth-child(3):hover {
-      border-color: rgba(34, 197, 94, 0.4);
-      box-shadow: 0 20px 60px rgba(34, 197, 94, 0.25);
+      border-color: rgba(249, 115, 22, 0.4);
+      box-shadow: 0 20px 60px rgba(249, 115, 22, 0.25);
     }
 
     /* Badge hover effect */
@@ -1405,6 +1405,18 @@
       #createFolderModal .fs-modal-panel {
         max-width: 95%;
         margin: auto;
+      }
+
+      #featureSuggestionModal .fs-modal-panel {
+        max-width: 95%;
+        margin: auto;
+        max-height: calc(100vh - 32px);
+      }
+
+      #featureSuggestionModal .fs-modal-panel > div:last-child {
+        max-height: calc(90vh - 200px);
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
       }
     }
 
@@ -2492,6 +2504,209 @@
     };
 
     window.showComingSoon = function (featureName) { window.showToast(`${featureName} - Tính năng đang phát triển 🚀`); };
+
+    window.openFeatureSuggestion = function () {
+      const input = document.getElementById('featureSuggestionInput');
+      if (input) input.value = '';
+      window.showModal('featureSuggestionModal');
+      window.loadFeatureSuggestions();
+      setTimeout(() => {
+        if (input) input.focus();
+      }, 100);
+    };
+
+    window.loadFeatureSuggestions = async function () {
+      const listContainer = document.getElementById('featureSuggestionsList');
+      if (!listContainer) return;
+      
+      listContainer.innerHTML = '<div class="text-center py-4"><div class="w-8 h-8 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto"></div></div>';
+      
+      try {
+        const suggestionsRef = window.firebaseCollection(window.db, 'artifacts', window.appId, 'featureSuggestions');
+        const snapshot = await window.firebaseGetDocs(suggestionsRef);
+        
+        const suggestions = [];
+        snapshot.forEach((doc) => {
+          const data = doc.data();
+          if (data.status !== 'rejected') {
+            suggestions.push({
+              id: doc.id,
+              ...data,
+              votes: data.votes || 0,
+              voters: data.voters || []
+            });
+          }
+        });
+        
+        // Sắp xếp theo số vote (nhiều nhất trước)
+        suggestions.sort((a, b) => {
+          if (b.votes !== a.votes) return b.votes - a.votes;
+          return b.timestamp - a.timestamp; // Nếu bằng nhau, sắp xếp theo thời gian
+        });
+        
+        // Hiển thị số lượng ý tưởng
+        const countEl = document.getElementById('featureSuggestionsCount');
+        if (countEl) {
+          countEl.textContent = `${suggestions.length} ý tưởng đã được đề xuất`;
+        }
+        
+        if (suggestions.length === 0) {
+          listContainer.innerHTML = `
+            <div class="text-center py-12 text-gray-400">
+              <div class="w-16 h-16 rounded-full bg-orange-100 dark:bg-orange-900/20 flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-lightbulb text-2xl text-orange-400"></i>
+              </div>
+              <p class="text-sm font-medium mb-1">Chưa có ý tưởng nào</p>
+              <p class="text-xs">Hãy là người đầu tiên đề xuất tính năng mới!</p>
+            </div>
+          `;
+          return;
+        }
+        
+        const currentUserId = window.currentUser?.uid || null;
+        let html = '';
+        suggestions.forEach((suggestion) => {
+          const hasVoted = currentUserId && suggestion.voters && suggestion.voters.includes(currentUserId);
+          const voteCount = suggestion.votes || 0;
+          
+          const isHot = voteCount >= 5;
+          
+          html += `
+            <div class="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-4 border border-gray-200 dark:border-gray-700 mb-3 hover:border-orange-300 dark:hover:border-orange-600 transition-colors ${isHot ? 'ring-2 ring-orange-200 dark:ring-orange-800' : ''}">
+              <div class="flex items-start gap-3">
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center gap-2 mb-2">
+                    ${isHot ? '<span class="px-2 py-0.5 rounded-full bg-orange-500 text-white text-[10px] font-bold flex items-center gap-1"><i class="fas fa-fire"></i> Hot</span>' : ''}
+                  </div>
+                  <p class="text-sm text-gray-800 dark:text-gray-200 leading-relaxed mb-3">${suggestion.suggestion}</p>
+                  <div class="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                    <div class="flex items-center gap-1">
+                      <i class="fas fa-user text-orange-500"></i>
+                      <span class="font-medium">${suggestion.userName || 'Anonymous'}</span>
+                    </div>
+                    <span class="mx-1">•</span>
+                    <span>${new Date(suggestion.timestamp).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' })}</span>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2 shrink-0">
+                  <button onclick="window.voteFeatureSuggestion('${suggestion.id}', ${hasVoted})" 
+                          class="px-4 py-2.5 rounded-lg ${hasVoted ? 'bg-orange-500 text-white shadow-md shadow-orange-500/30 hover:bg-orange-600' : 'bg-white dark:bg-gray-700 border-2 border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-orange-50 dark:hover:bg-orange-900/20 hover:border-orange-400 dark:hover:border-orange-500'} font-semibold text-sm transition-all flex items-center gap-2 min-w-[80px] justify-center">
+                    <i class="fas fa-heart ${hasVoted ? 'text-white' : 'text-orange-500'}"></i>
+                    <span class="font-bold">${voteCount}</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          `;
+        });
+        
+        listContainer.innerHTML = html;
+      } catch (e) {
+        console.error('Error loading feature suggestions:', e);
+        listContainer.innerHTML = `
+          <div class="text-center py-4 text-red-500">
+            <i class="fas fa-exclamation-circle mb-2"></i>
+            <p class="text-sm">Lỗi tải danh sách ý tưởng</p>
+          </div>
+        `;
+      }
+    };
+
+    window.voteFeatureSuggestion = async function (suggestionId, hasVoted) {
+      if (!window.currentUser) {
+        window.showToast('Vui lòng đăng nhập để bình chọn!');
+        window.goLanding();
+        return;
+      }
+      
+      const userId = window.currentUser.uid;
+      
+      window.safeClassList('loadingOverlay', 'remove', 'hidden');
+      try {
+        const suggestionRef = window.firebaseDoc(window.db, 'artifacts', window.appId, 'featureSuggestions', suggestionId);
+        const suggestionDoc = await window.firebaseGetDoc(suggestionRef);
+        
+        if (!suggestionDoc.exists()) {
+          window.showToast('Ý tưởng không tồn tại!');
+          return;
+        }
+        
+        const data = suggestionDoc.data();
+        const voters = data.voters || [];
+        const currentVotes = data.votes || 0;
+        
+        if (hasVoted) {
+          // Bỏ vote
+          const newVoters = voters.filter(v => v !== userId);
+          const newVotes = Math.max(0, currentVotes - 1);
+          await window.firebaseUpdateDoc(suggestionRef, {
+            votes: newVotes,
+            voters: newVoters
+          });
+          window.showToast('Đã bỏ bình chọn');
+        } else {
+          // Thêm vote
+          if (!voters.includes(userId)) {
+            await window.firebaseUpdateDoc(suggestionRef, {
+              votes: currentVotes + 1,
+              voters: [...voters, userId]
+            });
+            window.showToast('Đã bình chọn thành công!');
+          }
+        }
+        
+        // Reload danh sách
+        await window.loadFeatureSuggestions();
+      } catch (e) {
+        console.error('Error voting feature suggestion:', e);
+        window.showToast('Lỗi bình chọn: ' + (e.message || 'Không thể bình chọn'));
+      } finally {
+        window.safeClassList('loadingOverlay', 'add', 'hidden');
+      }
+    };
+
+    window.submitFeatureSuggestion = async function () {
+      const input = document.getElementById('featureSuggestionInput');
+      const suggestion = (input?.value || '').trim();
+      
+      if (!suggestion) {
+        window.showToast('Vui lòng nhập đề xuất của bạn!');
+        return;
+      }
+      
+      if (suggestion.length < 10) {
+        window.showToast('Đề xuất phải có ít nhất 10 ký tự!');
+        return;
+      }
+      
+      window.safeClassList('loadingOverlay', 'remove', 'hidden');
+      try {
+        const suggestionData = {
+          suggestion: suggestion,
+          userId: window.currentUser?.uid || 'anonymous',
+          userEmail: window.currentUser?.email || 'anonymous',
+          userName: window.currentUser?.displayName || 'Anonymous',
+          timestamp: Date.now(),
+          status: 'pending',
+          votes: 0,
+          voters: []
+        };
+        
+        // Lưu vào Firestore collection 'featureSuggestions'
+        await window.firebaseAddDoc(window.firebaseCollection(window.db, 'artifacts', window.appId, 'featureSuggestions'), suggestionData);
+        
+        if (input) input.value = '';
+        window.showToast('Cảm ơn bạn đã đề xuất! Chúng tôi sẽ xem xét ý tưởng của bạn. 💡');
+        
+        // Reload danh sách
+        await window.loadFeatureSuggestions();
+      } catch (e) {
+        console.error('Error submitting feature suggestion:', e);
+        window.showToast('Lỗi gửi đề xuất: ' + (e.message || 'Không thể gửi đề xuất'));
+      } finally {
+        window.safeClassList('loadingOverlay', 'add', 'hidden');
+      }
+    };
 
     // --- QUIZ RUNNER UI GENERATION ---
     window.renderRunnerModePicker = function () {
@@ -4751,12 +4966,12 @@
              <p class="text-gray-500 text-sm leading-relaxed">Tự động tra đáp án và điền form lấy điểm rèn luyện.</p>
           </div>
 
-          <div class="fs-card p-6 rounded-[2rem]  opacity-75 grayscale hover:grayscale-0 hover:opacity-100 cursor-not-allowed" onclick="window.showComingSoon('FastFlash')">
-             <div class="w-14 h-14 rounded-2xl bg-green-100 dark:bg-green-900/30 text-green-600 flex items-center justify-center text-2xl mb-5">
-                <i class="fas fa-layer-group"></i>
+          <div class="fs-card p-6 rounded-[2rem] cursor-pointer hover:border-orange-300 dark:hover:border-orange-600" onclick="window.openFeatureSuggestion()">
+             <div class="w-14 h-14 rounded-2xl bg-orange-100 dark:bg-orange-900/30 text-orange-600 flex items-center justify-center text-2xl mb-5">
+                <i class="fas fa-lightbulb"></i>
              </div>
-             <h3 class="text-xl font-bold mb-2">Flashcard <span class="text-[10px] bg-gray-200 dark:bg-gray-700 px-2 py-0.5 rounded text-gray-500 align-middle ml-2">SOON</span></h3>
-             <p class="text-gray-500 text-sm leading-relaxed">Học từ vựng và định nghĩa qua phương pháp lặp lại ngắt quãng.</p>
+             <h3 class="text-xl font-bold mb-2">Đề xuất tính năng</h3>
+             <p class="text-gray-500 text-sm leading-relaxed">Chia sẻ ý tưởng của bạn để chúng tôi cải thiện ứng dụng.</p>
           </div>
        </div>
     </section>
@@ -4790,13 +5005,13 @@
              <button class="w-full px-6 py-3 rounded-xl bg-gray-300 dark:bg-gray-700 text-gray-500 font-bold cursor-not-allowed" disabled>Sắp ra mắt</button>
           </div>
 
-          <div class="fs-card p-8 rounded-[2rem]  opacity-75 grayscale hover:grayscale-0 hover:opacity-100 cursor-not-allowed" onclick="window.showComingSoon('FastFlash')">
-             <div class="w-16 h-16 rounded-2xl bg-green-100 dark:bg-green-900/30 text-green-600 flex items-center justify-center text-3xl mb-5 mx-auto">
-                <i class="fas fa-layer-group"></i>
+          <div class="fs-card p-8 rounded-[2rem] cursor-pointer hover:border-orange-300 dark:hover:border-orange-600" onclick="window.openFeatureSuggestion()">
+             <div class="w-16 h-16 rounded-2xl bg-orange-100 dark:bg-orange-900/30 text-orange-600 flex items-center justify-center text-3xl mb-5 mx-auto">
+                <i class="fas fa-lightbulb"></i>
              </div>
-             <h3 class="text-2xl font-bold mb-3 text-center text-gray-900 dark:text-white">Flashcard <span class="text-[10px] bg-gray-200 dark:bg-gray-700 px-2 py-0.5 rounded text-gray-500 align-middle ml-2">SOON</span></h3>
-             <p class="text-gray-500 text-sm leading-relaxed text-center mb-6">Học từ vựng và định nghĩa qua phương pháp lặp lại ngắt quãng.</p>
-             <button class="w-full px-6 py-3 rounded-xl bg-gray-300 dark:bg-gray-700 text-gray-500 font-bold cursor-not-allowed" disabled>Sắp ra mắt</button>
+             <h3 class="text-2xl font-bold mb-3 text-center text-gray-900 dark:text-white">Đề xuất tính năng</h3>
+             <p class="text-gray-500 text-sm leading-relaxed text-center mb-6">Chia sẻ ý tưởng của bạn để chúng tôi cải thiện ứng dụng.</p>
+             <button class="w-full px-6 py-3 rounded-xl bg-orange-500 text-white font-bold hover:bg-orange-600 shadow-lg shadow-orange-500/20">Đề xuất ngay</button>
           </div>
        </div>
     </section>
@@ -5387,6 +5602,50 @@
             <button class="px-4 py-2 rounded-xl bg-yellow-500 text-white font-bold hover:bg-yellow-600" onclick="window.createFolder()">
                <i class="fas fa-check mr-1"></i>Tạo
             </button>
+         </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="featureSuggestionModal" class="hidden relative z-[100]">
+    <div class="fixed inset-0 bg-black/50 backdrop-blur-sm" onclick="window.closeModal('featureSuggestionModal')"></div>
+    <div class="fixed inset-0 z-10 flex items-center justify-center p-4">
+      <div class="fs-modal-panel bg-white dark:bg-gray-800 rounded-3xl w-full max-w-2xl shadow-2xl scale-95 opacity-0-all max-h-[90vh] flex flex-col" onclick="event.stopPropagation()">
+         <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+            <div class="flex items-center justify-between mb-4">
+               <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 flex items-center justify-center">
+                     <i class="fas fa-lightbulb"></i>
+                  </div>
+                  <div>
+                     <h3 class="font-bold text-lg text-gray-900 dark:text-white">Đề xuất tính năng</h3>
+                     <p class="text-xs text-gray-500">Chia sẻ ý tưởng của bạn</p>
+                  </div>
+               </div>
+               <button onclick="window.closeModal('featureSuggestionModal')" class="w-8 h-8 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center justify-center text-gray-400">
+                  <i class="fas fa-times"></i>
+               </button>
+            </div>
+            <div id="featureSuggestionsCount" class="text-xs text-gray-500 text-center"></div>
+         </div>
+         
+         <div class="flex-1 overflow-y-auto p-6">
+            <div id="featureSuggestionsList" class="mb-6">
+               <div class="text-center py-4">
+                  <div class="w-8 h-8 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
+               </div>
+            </div>
+            
+            <div class="border-t border-gray-200 dark:border-gray-700 pt-6">
+               <h4 class="font-bold text-sm mb-3 text-gray-900 dark:text-white">Đề xuất ý tưởng mới</h4>
+               <textarea id="featureSuggestionInput" class="w-full fs-input px-4 py-3 rounded-xl mb-4 min-h-[100px] resize-none" placeholder="Mô tả tính năng bạn muốn đề xuất..."></textarea>
+               <div class="flex gap-2 justify-end">
+                  <button class="px-4 py-2 rounded-xl text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700" onclick="window.closeModal('featureSuggestionModal')">Đóng</button>
+                  <button class="px-4 py-2 rounded-xl bg-orange-500 text-white font-bold hover:bg-orange-600" onclick="window.submitFeatureSuggestion()">
+                     <i class="fas fa-paper-plane mr-1"></i>Gửi đề xuất
+                  </button>
+               </div>
+            </div>
          </div>
       </div>
     </div>
