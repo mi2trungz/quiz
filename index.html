@@ -201,9 +201,71 @@
     .fs-option {
       position: relative;
       overflow: hidden;
-      transition: all 0.2s ease;
     }
-    .fs-option:hover { transform: translateX(4px); }
+    
+    /* Chỉ bỏ animation/transition khi chọn đáp án trong quiz runner */
+    #runnerArea .grid button,
+    #runnerArea button[onclick*="pickOption"],
+    #runnerArea button[onclick*="pickOptionExam"],
+    #runnerArea button[onclick*="pickOptionGame"] {
+      transition: none !important;
+      animation: none !important;
+      transform: scale(1) !important;
+      width: 100% !important;
+      min-width: 100% !important;
+      max-width: 100% !important;
+      min-height: auto !important;
+      box-sizing: border-box !important;
+      flex-shrink: 0 !important;
+      flex-grow: 0 !important;
+      padding: 0.5rem !important;
+    }
+    
+    #runnerArea .grid button:active,
+    #runnerArea .grid button:focus,
+    #runnerArea .grid button:hover,
+    #runnerArea .grid button:disabled,
+    #runnerArea button[onclick*="pickOption"]:active,
+    #runnerArea button[onclick*="pickOption"]:focus,
+    #runnerArea button[onclick*="pickOption"]:hover,
+    #runnerArea button[onclick*="pickOption"]:disabled,
+    #runnerArea button[onclick*="pickOptionExam"]:active,
+    #runnerArea button[onclick*="pickOptionExam"]:focus,
+    #runnerArea button[onclick*="pickOptionExam"]:hover,
+    #runnerArea button[onclick*="pickOptionExam"]:disabled,
+    #runnerArea button[onclick*="pickOptionGame"]:active,
+    #runnerArea button[onclick*="pickOptionGame"]:focus,
+    #runnerArea button[onclick*="pickOptionGame"]:hover,
+    #runnerArea button[onclick*="pickOptionGame"]:disabled {
+      transform: scale(1) !important;
+      transition: none !important;
+      animation: none !important;
+      width: 100% !important;
+      min-width: 100% !important;
+      max-width: 100% !important;
+      padding: 0.5rem !important;
+    }
+    
+    /* Đảm bảo grid container không làm button bị thu nhỏ */
+    #runnerArea .grid {
+      display: grid !important;
+      gap: 0.5rem !important;
+      grid-template-columns: 1fr !important;
+    }
+    
+    #runnerArea .grid > button {
+      width: 100% !important;
+      min-width: 100% !important;
+      max-width: 100% !important;
+      flex: 0 0 auto !important;
+    }
+    
+    /* Đảm bảo button không bị ảnh hưởng bởi flexbox */
+    #runnerArea button.flex {
+      flex: 0 0 auto !important;
+      flex-shrink: 0 !important;
+      flex-grow: 0 !important;
+    }
     
     /* Scrollbar */
     ::-webkit-scrollbar { width: 8px; height: 8px; }
@@ -607,7 +669,7 @@
     };
 
     // View / navigation 
-    window.__sections = ['appLandingSection','landingSection','featureSelectionSection','homeSection','inputSection','fileManagerSection','quizRunnerSection','profileSection'];
+    window.__sections = ['appLandingSection','landingSection','featureSelectionSection','homeSection','inputSection','fileManagerSection','sharedSection','quizRunnerSection','profileSection'];
     window.__viewStack = [];
     window.__currentView = null;
 
@@ -761,10 +823,13 @@
 
     window.startCreateNew = function () {
       window.setView('inputSection');
+      window.currentStep = 1;
+      window.switchToStep(1);
       const raw = document.getElementById('rawContent');
       const key = document.getElementById('answerKeyRaw');
       if (raw) raw.value = '';
       if (key) key.value = '';
+      window.masterQuestions = [];
       if (window.updatePreview) window.updatePreview();
       if (window.populateSaveFolderSelect) window.populateSaveFolderSelect();
       if (window.updateCurrentFolderName) window.updateCurrentFolderName();
@@ -774,7 +839,7 @@
     window.renderTable = function (folders, quizzes) {
       const listIds = ['fileListBody'];
       const backRowHTML = window.currentFolderId !== null
-        ? `<div class="grid grid-cols-12 gap-2 px-4 py-3 border-b border-gray-100 dark:border-gray-700/50 items-center font-medium text-gray-500 hover:text-blue-500 hover:bg-gray-50 dark:hover:bg-gray-800/30 transition cursor-pointer" onclick="window.navigateUp()">
+        ? `<div class="grid grid-cols-12 gap-2 px-4 py-3 border-b border-gray-100 dark:border-gray-700/50 items-center font-medium text-gray-500 hover:text-blue-500 hover:bg-gray-50 dark:hover:bg-gray-800/30 cursor-pointer" onclick="window.navigateUp()">
              <div class="col-span-12 flex items-center"><i class="fas fa-level-up-alt mr-3 text-lg"></i> Trở về thư mục trước</div>
            </div>`
         : '';
@@ -811,16 +876,16 @@
             : `window.startQuizRunnerFromList('${item.id}')`;
 
           contentHTML += `
-            <div class="grid grid-cols-12 gap-2 px-4 py-3 border-b border-gray-100 dark:border-gray-700/50 items-center group hover:bg-white dark:hover:bg-gray-800/80 transition cursor-pointer rounded-lg mx-2 my-1"
+            <div class="grid grid-cols-12 gap-2 px-4 py-3 border-b border-gray-100 dark:border-gray-700/50 items-center group hover:bg-white dark:hover:bg-gray-800/80 cursor-pointer rounded-lg mx-2 my-1"
                  draggable="true" ondragstart="${dragStart}" ondragover="${dragOver}" ondrop="${drop}" onclick="${clickAction}">
               <div class="col-span-7 md:col-span-7 flex items-center truncate">
                 ${iconHTML}
-                <span class="truncate font-semibold text-gray-700 dark:text-gray-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition">${item.name}</span>
+                <span class="truncate font-semibold text-gray-700 dark:text-gray-200 group-hover:text-blue-600 dark:group-hover:text-blue-400">${item.name}</span>
               </div>
               <div class="col-span-3 md:col-span-3 text-xs text-gray-400">${item.date || ''}</div>
               <div class="col-span-2 md:col-span-2 flex items-center justify-end gap-3">
                  ${sizeText}
-                 <button class="w-8 h-8 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center justify-center text-gray-400 transition" 
+                 <button class="w-8 h-8 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center justify-center text-gray-400" 
                          onclick="event.stopPropagation(); window.showContextMenu(event, '${item.id}', '${item.type}', '${(item.name || '').replace(/'/g, "\\'")}')">
                    <i class="fas fa-ellipsis-vertical"></i>
                  </button>
@@ -852,14 +917,14 @@
       if (!container) return;
       container.innerHTML = '';
       // Thêm nút "Trở về trang chủ" ở đầu
-      container.innerHTML += `<button onclick="window.goHome()" class="hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-gray-800 px-2 py-1 rounded-md text-sm font-medium transition"><i class="fas fa-arrow-left mr-1"></i>Trở về trang chủ</button>`;
+      container.innerHTML += `<button onclick="window.goHome()" class="hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-gray-800 px-2 py-1 rounded-md text-sm font-medium"><i class="fas fa-arrow-left mr-1"></i>Trở về trang chủ</button>`;
       // Hiển thị breadcrumbs nếu có
       window.breadcrumbs.forEach((crumb, index) => {
         if (index > 0) container.innerHTML += `<span class="text-gray-300 dark:text-gray-600 mx-2 text-xs"><i class="fas fa-chevron-right"></i></span>`;
         if (index === window.breadcrumbs.length - 1 && index !== 0) {
           container.innerHTML += `<span class="font-bold text-gray-800 dark:text-white px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded-md text-xs">${crumb.name}</span>`;
         } else if (index !== 0) {
-          container.innerHTML += `<button onclick="window.jumpToCrumb(${index})" class="hover:text-blue-500 hover:underline px-1 text-sm font-medium transition">${crumb.name}</button>`;
+          container.innerHTML += `<button onclick="window.jumpToCrumb(${index})" class="hover:text-blue-500 hover:underline px-1 text-sm font-medium">${crumb.name}</button>`;
         }
       });
     };
@@ -913,51 +978,190 @@
       const lines = text.split('\n');
       const result = [];
       let currentQ = null;
+      let currentOptionKey = null; // Track đang ở đáp án nào để nối các dòng tiếp theo
       let qCounter = 1;
       const optionRegex = /^([A-D])[\.\)\s]\s*(.*)/i;
+      const questionRegex = /^(Question|Câu|Q\.?)\s*(\d+)[\.\):]\s*(.*)/i; // Pattern để nhận diện câu hỏi mới (Question 1:, Câu 1:, Q.1:, etc.)
+      
       lines.forEach((line) => {
         const trimmed = line.trim();
-        if (!trimmed) return;
-        const match = trimmed.match(optionRegex);
-        if (match) {
+        if (!trimmed) {
+          // Dòng trống: reset currentOptionKey
+          currentOptionKey = null;
+          return;
+        }
+        
+        const optionMatch = trimmed.match(optionRegex);
+        const questionMatch = trimmed.match(questionRegex);
+        
+        // Ưu tiên kiểm tra pattern "Question" trước để tránh nối vào đáp án
+        if (questionMatch) {
+          // Dòng có pattern câu hỏi mới (Question 1:, Câu 1:, Q.1:, etc.)
+          const questionText = questionMatch[3] || trimmed.replace(/^(Question|Câu|Q\.?)\s*\d+[\.\):]\s*/i, '').trim();
+          
+          if (currentQ && Object.keys(currentQ.options).length > 0) {
+            // Câu hỏi cũ đã có đáp án: tạo câu hỏi mới
+            currentQ = { id: qCounter++, text: questionText, options: {}, correctKey: null };
+            result.push(currentQ);
+          } else if (currentQ) {
+            // Câu hỏi hiện tại chưa có đáp án: nối vào câu hỏi (trường hợp hiếm)
+            currentQ.text += ' ' + questionText;
+          } else {
+            // Chưa có câu hỏi nào: tạo câu hỏi mới
+            currentQ = { id: qCounter++, text: questionText, options: {}, correctKey: null };
+            result.push(currentQ);
+          }
+          currentOptionKey = null; // Reset khi gặp câu hỏi mới
+        } else if (optionMatch) {
+          // Dòng bắt đầu bằng A-D: đây là đáp án mới
           if (!currentQ) {
             currentQ = { id: qCounter++, text: 'Câu hỏi...', options: {}, correctKey: null };
             result.push(currentQ);
           }
-          currentQ.options[match[1].toUpperCase()] = match[2];
-        } else {
-          if (currentQ && Object.keys(currentQ.options).length > 0) {
-            currentQ = { id: qCounter, text: trimmed, options: {}, correctKey: null };
-            qCounter++;
-            result.push(currentQ);
-          } else if (currentQ) {
-            currentQ.text += ' ' + trimmed;
-          } else {
-            currentQ = { id: qCounter, text: trimmed, options: {}, correctKey: null };
-            qCounter++;
-            result.push(currentQ);
+          
+          // Xử lý trường hợp một dòng có nhiều đáp án (A. text B. text C. text D. text)
+          // Tìm tất cả các đáp án trong dòng bằng cách tìm pattern "X. " hoặc "X) "
+          const allOptionsInLine = [];
+          const optionPattern = /\b([A-D])[\.\)]\s+/g;
+          const positions = [];
+          let posMatch;
+          
+          // Tìm tất cả vị trí có đáp án
+          while ((posMatch = optionPattern.exec(trimmed)) !== null) {
+            positions.push({
+              key: posMatch[1].toUpperCase(),
+              index: posMatch.index,
+              fullLength: posMatch[0].length
+            });
           }
+          
+          // Nếu có nhiều đáp án trong một dòng
+          if (positions.length > 1) {
+            positions.forEach((pos, idx) => {
+              const startPos = pos.index + pos.fullLength;
+              const endPos = idx < positions.length - 1 ? positions[idx + 1].index : trimmed.length;
+              const optionText = trimmed.substring(startPos, endPos).trim();
+              
+              currentOptionKey = pos.key;
+              currentQ.options[currentOptionKey] = optionText;
+            });
+          } else {
+            // Chỉ có một đáp án
+            currentOptionKey = optionMatch[1].toUpperCase();
+            currentQ.options[currentOptionKey] = optionMatch[2];
+          }
+        } else if (currentOptionKey && currentQ && currentQ.options[currentOptionKey] !== undefined) {
+          // Dòng không bắt đầu bằng A-D nhưng đang trong một đáp án: nối vào đáp án hiện tại
+          currentQ.options[currentOptionKey] += ' ' + trimmed;
+        } else if (currentQ) {
+          // Dòng không phải đáp án, không phải câu hỏi mới
+          if (Object.keys(currentQ.options).length > 0) {
+            // Đã có đáp án: nối vào đáp án cuối cùng (tiếp tục đáp án)
+            const optionKeys = Object.keys(currentQ.options);
+            const lastOptionKey = optionKeys[optionKeys.length - 1];
+            if (lastOptionKey) {
+              currentQ.options[lastOptionKey] += ' ' + trimmed;
+              currentOptionKey = lastOptionKey; // Cập nhật để dòng tiếp theo cũng nối vào đây
+            }
+          } else {
+            // Chưa có đáp án: nối vào câu hỏi (câu hỏi nhiều dòng)
+            currentQ.text += ' ' + trimmed;
+          }
+        } else {
+          // Chưa có câu hỏi và không phải pattern đặc biệt: tạo câu hỏi mới
+          currentQ = { id: qCounter++, text: trimmed, options: {}, correctKey: null };
+          result.push(currentQ);
         }
       });
       return result.filter((q) => Object.keys(q.options).length > 0);
     };
 
+    // Step Management
+    window.currentStep = 1;
+    window.switchToStep = function (step) {
+      // Kiểm tra nếu chuyển sang bước 2 mà chưa có câu hỏi
+      if (step === 2) {
+        const questions = window.parseQuestionsText(document.getElementById('rawContent')?.value || '');
+        if (questions.length === 0) {
+          window.showToast('Vui lòng nhập nội dung câu hỏi trước!');
+          return;
+        }
+        // Đảm bảo masterQuestions được cập nhật
+        if (!window.masterQuestions || window.masterQuestions.length === 0) {
+          window.masterQuestions = questions.map(q => ({ ...q, correctKey: null }));
+        }
+      }
+      
+      window.currentStep = step;
+      const step1Content = document.getElementById('step1Content');
+      const step2Content = document.getElementById('step2Content');
+      const step1Btn = document.getElementById('step1Btn');
+      const step2Btn = document.getElementById('step2Btn');
+
+      if (step === 1) {
+        if (step1Content) step1Content.classList.remove('hidden');
+        if (step2Content) step2Content.classList.add('hidden');
+        if (step1Btn) {
+          step1Btn.classList.remove('bg-gray-200', 'dark:bg-gray-700', 'text-gray-600', 'dark:text-gray-300');
+          step1Btn.classList.add('bg-blue-600', 'text-white', 'shadow-lg', 'shadow-blue-500/30');
+        }
+        if (step2Btn) {
+          step2Btn.classList.remove('bg-blue-600', 'text-white', 'shadow-lg', 'shadow-blue-500/30');
+          step2Btn.classList.add('bg-gray-200', 'dark:bg-gray-700', 'text-gray-600', 'dark:text-gray-300');
+        }
+      } else {
+        if (step1Content) step1Content.classList.add('hidden');
+        if (step2Content) step2Content.classList.remove('hidden');
+        if (step1Btn) {
+          step1Btn.classList.remove('bg-blue-600', 'text-white', 'shadow-lg', 'shadow-blue-500/30');
+          step1Btn.classList.add('bg-gray-200', 'dark:bg-gray-700', 'text-gray-600', 'dark:text-gray-300');
+        }
+        if (step2Btn) {
+          step2Btn.classList.remove('bg-gray-200', 'dark:bg-gray-700', 'text-gray-600', 'dark:text-gray-300');
+          step2Btn.classList.add('bg-blue-600', 'text-white', 'shadow-lg', 'shadow-blue-500/30');
+        }
+        // Cập nhật preview khi chuyển sang bước 2
+        window.updateAnswerPreview();
+      }
+    };
+
+    window.goToStep2 = function () {
+      const questions = window.parseQuestionsText(document.getElementById('rawContent')?.value || '');
+      if (questions.length === 0) {
+        window.showToast('Vui lòng nhập nội dung câu hỏi trước!');
+        return;
+      }
+      window.masterQuestions = questions.map(q => ({ ...q, correctKey: null }));
+      window.switchToStep(2);
+    };
+
+    // Update preview for step 1 (no answer keys)
     window.updatePreview = function () {
       const rawContentInput = document.getElementById('rawContent');
-      const answerKeyRawInput = document.getElementById('answerKeyRaw');
       const livePreviewContainer = document.getElementById('livePreviewContainer');
       const previewCount = document.getElementById('previewCount');
 
-      if (!rawContentInput || !answerKeyRawInput) return;
+      if (!rawContentInput) return;
 
       const rawText = rawContentInput.value;
-      const answerText = answerKeyRawInput.value;
-      const cleanKeys = answerText.replace(/[^a-dA-D]/g, '').toUpperCase().split('');
       const questions = window.parseQuestionsText(rawText);
-      questions.forEach((q, index) => { q.correctKey = cleanKeys[index] || null; });
-      window.masterQuestions = questions;
+      // Không gán correctKey ở bước 1
+      window.masterQuestions = questions.map(q => ({ ...q, correctKey: null }));
 
       if (previewCount) previewCount.innerText = `${questions.length} câu`;
+      
+      // Enable/disable nút bước 2
+      const step2Btn = document.getElementById('step2Btn');
+      if (step2Btn) {
+        if (questions.length > 0) {
+          step2Btn.disabled = false;
+          step2Btn.classList.remove('opacity-50', 'cursor-not-allowed');
+        } else {
+          step2Btn.disabled = true;
+          step2Btn.classList.add('opacity-50', 'cursor-not-allowed');
+        }
+      }
+      
       if (livePreviewContainer) {
         livePreviewContainer.innerHTML = '';
         if (questions.length === 0) {
@@ -973,17 +1177,105 @@
           let html = `<div class="font-bold mb-2 text-gray-800 dark:text-gray-100 flex gap-2"><span class="text-blue-600">Q${idx + 1}.</span> ${q.text}</div>`;
           ['A', 'B', 'C', 'D'].forEach((key) => {
             if (q.options[key]) {
-              const isCorrect = (key === q.correctKey);
-              const bgClass = isCorrect
-                ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800'
-                : 'text-gray-600 dark:text-gray-400 border border-transparent';
-              html += `<div class="px-3 py-1.5 rounded-lg mb-1 ${bgClass} flex items-start gap-2"><span class="font-bold w-4">${key}.</span> <span>${q.options[key]}</span></div>`;
+              html += `<div class="px-3 py-1.5 rounded-lg mb-1 text-gray-600 dark:text-gray-400 border border-transparent flex items-start gap-2"><span class="font-bold w-4">${key}.</span> <span>${q.options[key]}</span></div>`;
             }
           });
           card.innerHTML = html;
           livePreviewContainer.appendChild(card);
         });
       }
+    };
+
+    // Select answer by clicking
+    window.selectAnswer = function (questionIndex, answerKey) {
+      if (!window.masterQuestions || !window.masterQuestions[questionIndex]) return;
+      
+      window.masterQuestions[questionIndex].correctKey = answerKey;
+      
+      // Cập nhật chuỗi đáp án
+      const answerString = window.masterQuestions.map(q => q.correctKey || '').join('');
+      const answerKeyInput = document.getElementById('answerKeyRaw');
+      if (answerKeyInput) answerKeyInput.value = answerString;
+      
+      // Cập nhật preview
+      window.updateAnswerPreview();
+    };
+
+    // Toggle floating answer input
+    window.toggleAnswerInput = function () {
+      const floatingInput = document.getElementById('floatingAnswerInput');
+      const previewContainer = document.getElementById('answerPreviewContainer');
+      if (!floatingInput) return;
+      
+      if (floatingInput.classList.contains('hidden')) {
+        floatingInput.classList.remove('hidden');
+        // Thêm padding-bottom cho preview container
+        if (previewContainer) previewContainer.classList.add('pb-32');
+        // Focus vào input khi hiện lên
+        setTimeout(() => {
+          const input = document.getElementById('answerKeyRaw');
+          if (input) input.focus();
+        }, 100);
+      } else {
+        floatingInput.classList.add('hidden');
+        // Xóa padding-bottom khi ẩn
+        if (previewContainer) previewContainer.classList.remove('pb-32');
+      }
+    };
+
+    // Update answer preview (with selected answers and clickable)
+    window.updateAnswerPreview = function () {
+      const container = document.getElementById('answerPreviewContainer');
+      const countEl = document.getElementById('answerPreviewCount');
+      if (!container) return;
+
+      const questions = window.masterQuestions || [];
+      const answerKeyInput = document.getElementById('answerKeyRaw');
+      
+      if (countEl) countEl.innerText = `${questions.length} câu`;
+      
+      // Đồng bộ từ input nếu có
+      if (answerKeyInput) {
+        const answerText = answerKeyInput.value;
+        const cleanKeys = answerText.replace(/[^a-dA-D]/g, '').toUpperCase().split('');
+        questions.forEach((q, index) => {
+          if (cleanKeys[index]) {
+            q.correctKey = cleanKeys[index];
+          }
+        });
+      }
+
+      container.innerHTML = '';
+      if (questions.length === 0) {
+        container.innerHTML = `<div class="flex flex-col items-center justify-center h-40 text-gray-400 italic">
+          <i class="fas fa-eye text-2xl mb-2 opacity-50"></i>
+          Chưa có câu hỏi nào
+        </div>`;
+        return;
+      }
+
+      questions.forEach((q, idx) => {
+        const card = document.createElement('div');
+        card.className = 'bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-100 dark:border-gray-700 text-sm mb-3 shadow-sm';
+        let html = `<div class="font-bold mb-3 text-gray-800 dark:text-gray-100 flex gap-2"><span class="text-blue-600">Q${idx + 1}.</span> ${q.text}</div>`;
+        html += '<div class="space-y-2">';
+        ['A', 'B', 'C', 'D'].forEach((key) => {
+          if (q.options[key]) {
+            const isSelected = (key === q.correctKey);
+            const bgClass = isSelected
+              ? 'bg-green-500 text-white border-2 border-green-600 shadow-md'
+              : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 border-2 border-transparent';
+            html += `<button onclick="window.selectAnswer(${idx}, '${key}')" class="w-full px-4 py-3 rounded-lg ${bgClass} flex items-start gap-3 cursor-pointer text-left">
+              <span class="font-bold w-6 h-6 rounded-full flex items-center justify-center ${isSelected ? 'bg-white text-green-600' : 'bg-gray-200 dark:bg-gray-600'}">${key}</span>
+              <span class="flex-1">${q.options[key]}</span>
+              ${isSelected ? '<i class="fas fa-check-circle text-white"></i>' : ''}
+            </button>`;
+          }
+        });
+        html += '</div>';
+        card.innerHTML = html;
+        container.appendChild(card);
+      });
     };
 
     // --- MODALS ---
@@ -1087,28 +1379,42 @@
 
     // --- QUIZ RUNNER UI GENERATION ---
     window.renderRunnerModePicker = function () {
+      // Clear game timer if exists
+      const s = window.runnerState;
+      if (s && s.timerInterval) {
+        clearInterval(s.timerInterval);
+        s.timerInterval = null;
+      }
+      
       const area = document.getElementById('runnerArea');
       if (!area) return;
       const total = (window.runningQuiz?.questions || []).length;
 
       area.innerHTML = `
-        <div class="animate-fade-in">
+        <div class="max-w-4xl mx-auto">
           <div class="text-center mb-8">
             <h2 class="text-2xl font-bold mb-2">Sẵn sàng làm bài?</h2>
             <p class="text-gray-500">Bộ đề này có tổng cộng <span class="font-bold text-blue-600">${total}</span> câu hỏi.</p>
           </div>
 
-          <div class="grid sm:grid-cols-2 gap-4 max-w-2xl mx-auto">
-            <button class="group p-6 rounded-3xl bg-gradient-to-br from-blue-600 to-indigo-600 text-white text-left hover:scale-[1.02] transition shadow-lg shadow-blue-500/30" onclick="window.startRunner('practice')">
-              <div class="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center mb-4 text-2xl group-hover:rotate-12 transition">⚡</div>
-              <div class="text-lg font-bold mb-1">Luyện tập</div>
-              <div class="text-blue-100 text-sm opacity-90">Làm từng câu, kiểm tra đáp án ngay lập tức. Phù hợp để ôn bài.</div>
+          <div class="grid sm:grid-cols-3 gap-4">
+            <button class="group p-6 rounded-3xl bg-gradient-to-br from-blue-600 to-indigo-600 text-white text-left shadow-lg shadow-blue-500/30 cursor-pointer" onclick="window.startRunner('practice')">
+              <div class="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center mb-4 text-2xl shrink-0">⚡</div>
+              <div class="text-lg font-bold mb-2">Luyện tập</div>
+              <div class="text-blue-100 text-sm opacity-90 leading-relaxed">Làm từng câu, kiểm tra đáp án ngay lập tức. Phù hợp để ôn bài.</div>
             </button>
 
-            <button class="group p-6 rounded-3xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-left hover:border-blue-500 dark:hover:border-blue-500 hover:scale-[1.02] transition shadow-sm" onclick="window.startRunner('exam')">
-              <div class="w-12 h-12 rounded-2xl bg-gray-100 dark:bg-gray-700 flex items-center justify-center mb-4 text-2xl group-hover:rotate-12 transition">📝</div>
-              <div class="text-lg font-bold mb-1 dark:text-white">Thi thử</div>
-              <div class="text-gray-500 dark:text-gray-400 text-sm">Làm hết một lượt rồi nộp bài. Mô phỏng phòng thi thực tế.</div>
+            <button class="group p-6 rounded-3xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-left shadow-sm cursor-pointer" onclick="window.startRunner('exam')">
+              <div class="w-12 h-12 rounded-2xl bg-gray-100 dark:bg-gray-700 flex items-center justify-center mb-4 text-2xl shrink-0">📝</div>
+              <div class="text-lg font-bold mb-2 dark:text-white">Thi thử</div>
+              <div class="text-gray-500 dark:text-gray-400 text-sm leading-relaxed">Làm hết một lượt rồi nộp bài. Mô phỏng phòng thi thực tế.</div>
+            </button>
+
+            <button class="group p-6 rounded-3xl bg-gradient-to-br from-purple-600 to-pink-600 text-white text-left shadow-lg shadow-purple-500/30 opacity-75 grayscale cursor-not-allowed relative" disabled>
+              <div class="absolute top-4 right-4 px-3 py-1.5 bg-white/20 backdrop-blur-sm rounded-full text-xs font-bold text-white">Coming Soon</div>
+              <div class="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center mb-4 text-2xl shrink-0">🎮</div>
+              <div class="text-lg font-bold mb-2">Game Mode</div>
+              <div class="text-purple-100 text-sm opacity-90 leading-relaxed">Trả lời nhanh, tích điểm, tạo streak! Thử thách bản thân với timer.</div>
             </button>
           </div>
         </div>
@@ -1129,15 +1435,15 @@
         let allQuestionsHTML = '';
         s.questions.forEach((q, idx) => {
           const picked = s.selected[idx];
-          const optionKeys = Object.keys(q.options || {});
+          // Đảm bảo thứ tự A, B, C, D
+          const orderedKeys = ['A', 'B', 'C', 'D'].filter(k => q.options && q.options[k]);
           
-          const optionsHTML = optionKeys.map((k) => {
-            const key = k.toUpperCase();
-            const text = q.options[k];
+          const optionsHTML = orderedKeys.map((key) => {
+            const text = q.options[key];
             const isPicked = picked === key;
             
-            let baseStyle = "w-full text-left p-3 rounded-xl border-2 transition-all duration-200 flex items-start gap-3 ";
-            let stateStyle = "border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-blue-200 dark:hover:border-blue-800 hover:bg-blue-50 dark:hover:bg-gray-700/50";
+            let baseStyle = "w-full text-left p-2 rounded-lg border-2 flex items-start gap-2 ";
+            let stateStyle = "border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800";
             let icon = `<div class="w-5 h-5 rounded-full border border-gray-300 dark:border-gray-600 flex items-center justify-center text-xs font-bold text-gray-500">${key}</div>`;
             
             if (isPicked) {
@@ -1146,16 +1452,16 @@
             }
             
             return `<button class="${baseStyle} ${stateStyle}" onclick="window.pickOptionExam(${idx}, '${key}')">
-              <div class="mt-0.5 shrink-0">${icon}</div>
-              <div class="text-sm font-medium text-gray-800 dark:text-gray-100 leading-relaxed">${text}</div>
+              <div class="shrink-0">${icon}</div>
+              <div class="text-sm font-medium text-gray-800 dark:text-gray-100 leading-normal">${text}</div>
             </button>`;
           }).join('');
           
           allQuestionsHTML += `
-            <div class="bg-white dark:bg-gray-800/50 rounded-2xl p-5 shadow-lg border border-gray-100 dark:border-gray-700 mb-4">
-              <div class="flex items-start gap-3 mb-4">
+            <div class="bg-white dark:bg-gray-800/50 rounded-2xl p-4 shadow-lg border border-gray-100 dark:border-gray-700 mb-3">
+              <div class="flex items-start gap-3 mb-3">
                 <span class="px-3 py-1 rounded-lg bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-sm font-bold shrink-0">Câu ${idx + 1}</span>
-                <div class="text-base font-bold text-gray-900 dark:text-white leading-relaxed flex-1">${q.text}</div>
+                <div class="text-base font-bold text-gray-900 dark:text-white leading-normal flex-1">${q.text}</div>
               </div>
               <div class="grid gap-2">
                 ${optionsHTML}
@@ -1169,7 +1475,7 @@
             <div class="flex items-center justify-between mb-4">
               <span class="text-xs font-bold uppercase tracking-wider text-gray-400">Đã trả lời: ${answeredCount}/${s.questions.length}</span>
               <div class="flex gap-2">
-                <button onclick="window.renderRunnerModePicker()" class="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition"><i class="fas fa-arrow-rotate-left mr-1"></i> Mode</button>
+                <button onclick="window.renderRunnerModePicker()" class="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"><i class="fas fa-arrow-rotate-left mr-1"></i> Mode</button>
               </div>
             </div>
             
@@ -1177,14 +1483,102 @@
               <div class="h-full bg-gradient-to-r from-blue-500 to-indigo-500 transition-all duration-300" style="width: ${progressPercent}%"></div>
             </div>
             
-            <div class="space-y-4 mb-6">
+            <div class="space-y-3 mb-4">
               ${allQuestionsHTML}
             </div>
             
             <div class="sticky bottom-4 bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-xl border border-gray-200 dark:border-gray-700">
-              <button class="w-full px-6 py-4 rounded-xl bg-green-600 text-white font-bold shadow-lg shadow-green-500/30 hover:shadow-green-500/50 hover:-translate-y-0.5 transition text-lg" onclick="window.submitQuiz()">
+              <button class="w-full px-6 py-4 rounded-xl bg-green-600 text-white font-bold shadow-lg shadow-green-500/30 text-lg" onclick="window.submitQuiz()">
                 <i class="fas fa-paper-plane mr-2"></i>Nộp bài
               </button>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      // Game mode: hiển thị với timer, điểm số, streak
+      if (s.mode === 'game' && !s.submitted) {
+        const q = s.questions[s.currentIndex];
+        const picked = s.selected[s.currentIndex];
+        const optionKeys = Object.keys(q.options || {});
+        const progressPercent = ((s.currentIndex + 1) / s.questions.length) * 100;
+        const timeLeft = s.timeLeft || 30; // 30 giây mỗi câu
+        const score = s.score || 0;
+        const streak = s.streak || 0;
+        const timePercent = (timeLeft / 30) * 100;
+        let timeColorClass = 'text-green-500';
+        let timeBarColor = 'from-green-500 to-green-600';
+        if (timeLeft <= 5) {
+          timeColorClass = 'text-red-500';
+          timeBarColor = 'from-red-500 to-red-600';
+        } else if (timeLeft <= 15) {
+          timeColorClass = 'text-yellow-500';
+          timeBarColor = 'from-yellow-500 to-yellow-600';
+        }
+
+        // Options - Đảm bảo thứ tự A, B, C, D
+        const orderedKeys = ['A', 'B', 'C', 'D'].filter(k => q.options && q.options[k]);
+        
+        const optionsHTML = orderedKeys.map((key) => {
+          const text = q.options[key];
+          const isPicked = picked === key;
+          
+          let baseStyle = "w-full text-left p-2 rounded-lg border-2 flex items-start gap-2 ";
+          let stateStyle = "border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800";
+          let icon = `<div class="w-5 h-5 rounded-full border border-gray-300 dark:border-gray-600 flex items-center justify-center text-xs font-bold text-gray-500">${key}</div>`;
+
+          if (isPicked) {
+            stateStyle = "border-blue-500 bg-blue-50 dark:bg-blue-900/20";
+            icon = `<div class="w-5 h-5 rounded-full bg-blue-500 border border-blue-500 flex items-center justify-center text-xs font-bold text-white">${key}</div>`;
+          }
+
+          return `<button class="${baseStyle} ${stateStyle}" onclick="window.pickOptionGame('${key}')" ${picked ? 'disabled' : ''}>
+             <div class="shrink-0">${icon}</div>
+             <div class="text-sm font-medium text-gray-800 dark:text-gray-100 leading-normal">${text}</div>
+          </button>`;
+        }).join('');
+
+        area.innerHTML = `
+          <div class=" max-w-3xl mx-auto">
+            <div class="flex items-center justify-between mb-4">
+              <div class="flex items-center gap-4">
+                <div class="px-4 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold shadow-lg">
+                  <i class="fas fa-star mr-2"></i>${score} điểm
+                </div>
+                ${streak > 0 ? `<div class="px-4 py-2 rounded-xl bg-orange-500 text-white font-bold shadow-lg animate-pulse">
+                  <i class="fas fa-fire mr-2"></i>Streak x${streak}
+                </div>` : ''}
+              </div>
+              <div class="flex items-center gap-2">
+                <button onclick="window.renderRunnerModePicker()" class="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"><i class="fas fa-arrow-rotate-left mr-1"></i> Mode</button>
+              </div>
+            </div>
+
+            <div class="mb-4">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-xs font-bold uppercase tracking-wider text-gray-400">Câu hỏi ${s.currentIndex + 1}/${s.questions.length}</span>
+                <div class="flex items-center gap-2">
+                  <i class="fas fa-clock ${timeColorClass}"></i>
+                  <span class="${timeColorClass} font-bold text-lg">${timeLeft}s</span>
+                </div>
+              </div>
+              <div class="h-2 w-full bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
+                <div class="h-full bg-gradient-to-r from-blue-500 to-indigo-500 transition-all duration-300" style="width: ${progressPercent}%"></div>
+              </div>
+              <div class="h-1 w-full bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden mt-2">
+                <div class="h-full bg-gradient-to-r ${timeBarColor} transition-all duration-1000" style="width: ${timePercent}%"></div>
+              </div>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800/50 rounded-[2rem] p-4 md:p-5 shadow-xl shadow-gray-200/50 dark:shadow-none border border-white dark:border-gray-700 backdrop-blur-sm relative">
+               <div class="text-lg md:text-xl font-bold text-gray-900 dark:text-white mb-6 leading-relaxed">
+                 ${q.text}
+               </div>
+               
+               <div class="grid gap-2">
+                  ${optionsHTML}
+               </div>
             </div>
           </div>
         `;
@@ -1196,37 +1590,38 @@
       const picked = s.selected[s.currentIndex];
       const isChecked = s.checked[s.currentIndex];
       const showAnswerNow = (s.mode === 'practice' && isChecked) || (s.mode === 'exam' && s.submitted);
-      const optionKeys = Object.keys(q.options || {});
+      // Đảm bảo thứ tự A, B, C, D
+      const orderedKeys = ['A', 'B', 'C', 'D'].filter(k => q.options && q.options[k]);
       const progressPercent = ((s.currentIndex + 1) / s.questions.length) * 100;
 
       // Options
-      const optionsHTML = optionKeys.map((k) => {
-        const key = k.toUpperCase();
-        const text = q.options[k];
+      const optionsHTML = orderedKeys.map((key) => {
+        const text = q.options[key];
         const isPicked = picked === key;
         const isCorrect = q.correctKey && key === q.correctKey;
         const isWrongPicked = showAnswerNow && isPicked && q.correctKey && key !== q.correctKey;
 
-        let baseStyle = "w-full text-left p-4 rounded-2xl border-2 transition-all duration-200 flex items-start gap-3 relative overflow-hidden group ";
-        let stateStyle = "border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-blue-200 dark:hover:border-blue-800 hover:bg-blue-50 dark:hover:bg-gray-700/50";
-        let icon = `<div class="w-6 h-6 rounded-full border border-gray-300 dark:border-gray-600 flex items-center justify-center text-xs font-bold text-gray-500 group-hover:border-blue-400 group-hover:text-blue-500 transition">${key}</div>`;
+        let baseStyle = "w-full text-left p-2 rounded-lg border-2 flex items-start gap-2 ";
+        let stateStyle = "border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800";
+        let icon = `<div class="w-5 h-5 rounded-full border border-gray-300 dark:border-gray-600 flex items-center justify-center text-xs font-bold text-gray-500">${key}</div>`;
 
         if (isPicked) {
             stateStyle = "border-blue-500 bg-blue-50 dark:bg-blue-900/20";
-            icon = `<div class="w-6 h-6 rounded-full bg-blue-500 border border-blue-500 flex items-center justify-center text-xs font-bold text-white shadow-lg shadow-blue-500/40">${key}</div>`;
+            icon = `<div class="w-5 h-5 rounded-full bg-blue-500 border border-blue-500 flex items-center justify-center text-xs font-bold text-white">${key}</div>`;
         }
         if (showAnswerNow && isCorrect) {
-            stateStyle = "border-green-500 bg-green-50 dark:bg-green-900/20 ring-1 ring-green-500";
-            icon = `<div class="w-6 h-6 rounded-full bg-green-500 border border-green-500 flex items-center justify-center text-xs font-bold text-white shadow-lg shadow-green-500/40"><i class="fas fa-check"></i></div>`;
+            stateStyle = "border-green-500 bg-green-50 dark:bg-green-900/20";
+            icon = `<div class="w-5 h-5 rounded-full bg-green-500 border border-green-500 flex items-center justify-center text-xs font-bold text-white"><i class="fas fa-check"></i></div>`;
         }
         if (isWrongPicked) {
             stateStyle = "border-red-500 bg-red-50 dark:bg-red-900/20";
-            icon = `<div class="w-6 h-6 rounded-full bg-red-500 border border-red-500 flex items-center justify-center text-xs font-bold text-white shadow-lg shadow-red-500/40"><i class="fas fa-xmark"></i></div>`;
+            icon = `<div class="w-5 h-5 rounded-full bg-red-500 border border-red-500 flex items-center justify-center text-xs font-bold text-white"><i class="fas fa-xmark"></i></div>`;
         }
 
-        return `<button class="${baseStyle} ${stateStyle}" onclick="window.pickOption('${key}')" ${s.submitted ? 'disabled' : ''}>
-           <div class="mt-0.5 shrink-0">${icon}</div>
-           <div class="text-sm md:text-base font-medium text-gray-800 dark:text-gray-100 leading-relaxed">${text}</div>
+        const isDisabled = s.submitted || (s.mode === 'practice' && isChecked);
+        return `<button class="${baseStyle} ${stateStyle}" onclick="window.pickOption('${key}')" ${isDisabled ? 'disabled' : ''}>
+           <div class="shrink-0">${icon}</div>
+           <div class="text-sm font-medium text-gray-800 dark:text-gray-100 leading-normal">${text}</div>
         </button>`;
       }).join('');
 
@@ -1234,16 +1629,29 @@
       const prevDisabled = s.currentIndex === 0;
       const nextDisabled = s.currentIndex === s.questions.length - 1;
       const canCheck = s.mode === 'practice' && !isChecked && !!picked;
-      const showCheckBtn = s.mode === 'practice' && !s.submitted;
+      const showCheckBtn = s.mode === 'practice' && !s.submitted && !isChecked;
       const showSubmitBtn = s.mode === 'exam' && !s.submitted;
+      
+      // Kiểm tra xem practice mode đã hoàn thành chưa (tất cả câu đã được check)
+      if (s.mode === 'practice' && !s.submitted && !s.resultsShown) {
+        const allChecked = s.questions.every((q, idx) => s.checked[idx] === true);
+        if (allChecked) {
+          // Tự động hiển thị kết quả khi hoàn thành
+          s.resultsShown = true;
+          setTimeout(() => {
+            window.openResultsOverview();
+          }, 500);
+          return;
+        }
+      }
 
       area.innerHTML = `
-        <div class="animate-fade-in max-w-3xl mx-auto">
+        <div class=" max-w-3xl mx-auto">
           <div class="flex items-center justify-between mb-4">
             <span class="text-xs font-bold uppercase tracking-wider text-gray-400">Câu hỏi ${s.currentIndex + 1}/${s.questions.length}</span>
             <div class="flex gap-2">
                  ${s.submitted ? `<span class="px-2 py-1 rounded bg-blue-100 text-blue-700 text-xs font-bold">Đã nộp bài</span>` : ''}
-                 <button onclick="window.renderRunnerModePicker()" class="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition"><i class="fas fa-arrow-rotate-left mr-1"></i> Mode</button>
+                 <button onclick="window.renderRunnerModePicker()" class="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"><i class="fas fa-arrow-rotate-left mr-1"></i> Mode</button>
             </div>
           </div>
 
@@ -1251,17 +1659,17 @@
             <div class="h-full bg-gradient-to-r from-blue-500 to-indigo-500 transition-all duration-300" style="width: ${progressPercent}%"></div>
           </div>
 
-          <div class="bg-white dark:bg-gray-800/50 rounded-[2rem] p-6 md:p-8 shadow-xl shadow-gray-200/50 dark:shadow-none border border-white dark:border-gray-700 backdrop-blur-sm relative">
-             <div class="text-lg md:text-xl font-bold text-gray-900 dark:text-white mb-6 leading-relaxed">
+          <div class="bg-white dark:bg-gray-800/50 rounded-[2rem] p-4 md:p-5 shadow-xl shadow-gray-200/50 dark:shadow-none border border-white dark:border-gray-700 backdrop-blur-sm relative">
+             <div class="text-lg md:text-xl font-bold text-gray-900 dark:text-white mb-4 leading-normal">
                ${q.text}
              </div>
              
-             <div class="grid gap-3 mb-6">
+             <div class="grid gap-2">
                 ${optionsHTML}
              </div>
 
              ${(s.mode === 'practice' && isChecked) ? `
-               <div class="p-4 rounded-xl ${picked === q.correctKey ? 'bg-green-50 dark:bg-green-900/20 text-green-800 dark:text-green-300' : 'bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-300'} border border-transparent animate-fade-in">
+               <div class="p-4 rounded-xl ${picked === q.correctKey ? 'bg-green-50 dark:bg-green-900/20 text-green-800 dark:text-green-300' : 'bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-300'} border border-transparent ">
                  <div class="flex items-center gap-2 font-bold mb-1">
                    ${picked === q.correctKey ? '<i class="fas fa-circle-check"></i> Chính xác!' : '<i class="fas fa-circle-xmark"></i> Sai rồi!'}
                  </div>
@@ -1271,17 +1679,17 @@
           </div>
 
           <div class="flex items-center justify-between mt-6 gap-3">
-             <button class="px-5 py-3 rounded-xl font-semibold text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-800 transition disabled:opacity-30" 
+             <button class="px-5 py-3 rounded-xl font-semibold text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-800 disabled:opacity-30" 
                      ${prevDisabled ? 'disabled' : ''} onclick="window.prevQuestion()"><i class="fas fa-arrow-left mr-2"></i>Trước</button>
              
-             <div class="flex gap-3">
-               ${showCheckBtn ? `<button class="px-6 py-3 rounded-xl bg-blue-600 text-white font-bold shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 hover:-translate-y-0.5 transition disabled:opacity-50 disabled:shadow-none" ${canCheck ? '' : 'disabled'} onclick="window.checkCurrent()">Kiểm tra</button>` : ''}
-               ${showSubmitBtn ? `<button class="px-6 py-3 rounded-xl bg-green-600 text-white font-bold shadow-lg shadow-green-500/30 hover:shadow-green-500/50 hover:-translate-y-0.5 transition" onclick="window.submitQuiz()">Nộp bài <i class="fas fa-paper-plane ml-2"></i></button>` : ''}
+             <div class="flex gap-3 flex-1 justify-center">
+               ${showCheckBtn ? `<button class="px-6 py-3 rounded-xl bg-blue-600 text-white font-bold shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 disabled:opacity-50 disabled:shadow-none" ${canCheck ? '' : 'disabled'} onclick="window.checkCurrent()">Kiểm tra</button>` : ''}
+               ${showSubmitBtn ? `<button class="px-6 py-3 rounded-xl bg-green-600 text-white font-bold shadow-lg shadow-green-500/30 hover:shadow-green-500/50 " onclick="window.submitQuiz()">Nộp bài <i class="fas fa-paper-plane ml-2"></i></button>` : ''}
                
-               ${(s.mode === 'exam' && s.submitted) ? `<button class="px-6 py-3 rounded-xl bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-bold shadow-lg hover:-translate-y-0.5 transition" onclick="window.openResultsOverview()">Xem kết quả</button>` : ''}
+               ${(s.mode === 'exam' && s.submitted) ? `<button class="px-6 py-3 rounded-xl bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-bold shadow-lg " onclick="window.openResultsOverview()">Xem kết quả</button>` : ''}
              </div>
 
-             <button class="px-5 py-3 rounded-xl font-semibold text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-800 transition disabled:opacity-30" 
+             <button class="px-5 py-3 rounded-xl font-semibold ${isChecked ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30' : 'text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-800'} disabled:opacity-30" 
                      ${nextDisabled ? 'disabled' : ''} onclick="window.nextQuestion()">Tiếp <i class="fas fa-arrow-right ml-2"></i></button>
           </div>
         </div>
@@ -1300,7 +1708,7 @@
       
       const area = document.getElementById('runnerArea');
       area.innerHTML = `
-        <div class="animate-fade-in max-w-3xl mx-auto">
+        <div class=" max-w-3xl mx-auto">
            <div class="bg-white dark:bg-gray-800 rounded-[2rem] p-8 text-center shadow-xl border border-gray-100 dark:border-gray-700 mb-6">
              <div class="text-gray-500 text-sm font-bold uppercase tracking-wider mb-2">Kết quả của bạn</div>
              <div class="text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-pink-500 mb-4">${score}/${total}</div>
@@ -1309,15 +1717,15 @@
                 <span class="px-3 py-1 rounded-full bg-green-100 text-green-700 text-xs font-bold">Đúng: ${total - wrongCount}</span>
              </div>
              <div class="grid ${hasWrongAnswers ? 'grid-cols-1 sm:grid-cols-3' : 'grid-cols-1 sm:grid-cols-2'} gap-3 max-w-lg mx-auto">
-               <button class="py-3 rounded-xl bg-gray-100 dark:bg-gray-700 font-semibold hover:bg-gray-200 transition" onclick="window.viewFullReview()">
+               <button class="py-3 rounded-xl bg-gray-100 dark:bg-gray-700 font-semibold hover:bg-gray-200" onclick="window.viewFullReview()">
                  <i class="fas fa-eye mr-2"></i>Xem lại bài làm
                </button>
                ${hasWrongAnswers ? `
-               <button class="py-3 rounded-xl bg-gray-100 dark:bg-gray-700 font-semibold hover:bg-gray-200 transition" onclick="window.redoWrong()">
+               <button class="py-3 rounded-xl bg-gray-100 dark:bg-gray-700 font-semibold hover:bg-gray-200" onclick="window.redoWrong()">
                  <i class="fas fa-redo mr-2"></i>Làm lại câu sai
                </button>
                ` : ''}
-               <button class="py-3 rounded-xl bg-blue-600 text-white font-bold hover:bg-blue-700 transition" onclick="window.redoAll()">
+               <button class="py-3 rounded-xl bg-blue-600 text-white font-bold hover:bg-blue-700" onclick="window.redoAll()">
                  <i class="fas fa-sync-alt mr-2"></i>Làm lại tất cả
                </button>
              </div>
@@ -1330,7 +1738,7 @@
                 const picked = s.selected[i];
                 const ok = picked && q.correctKey && picked === q.correctKey;
                 const borderClass = ok ? 'border-l-4 border-l-green-500' : 'border-l-4 border-l-red-500';
-                return `<div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 ${borderClass} cursor-pointer hover:shadow-md transition" onclick="window.jumpToQuestion(${i})">
+                return `<div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 ${borderClass} cursor-pointer hover:shadow-md" onclick="window.jumpToQuestion(${i})">
                    <div class="flex justify-between items-start">
                       <span class="font-bold text-gray-500 text-xs">Câu ${i+1}</span>
                       ${ok ? '<i class="fas fa-check text-green-500"></i>' : '<i class="fas fa-xmark text-red-500"></i>'}
@@ -1354,12 +1762,12 @@
       s.questions.forEach((q, i) => {
         const picked = s.selected[i];
         const ok = picked && q.correctKey && picked === q.correctKey;
-        const optionKeys = Object.keys(q.options || {});
+        // Đảm bảo thứ tự A, B, C, D
+        const orderedKeys = ['A', 'B', 'C', 'D'].filter(k => q.options && q.options[k]);
         
         let optionsHTML = '';
-        optionKeys.forEach((k) => {
-          const key = k.toUpperCase();
-          const text = q.options[k];
+        orderedKeys.forEach((key) => {
+          const text = q.options[key];
           const isPicked = picked === key;
           const isCorrect = q.correctKey && key === q.correctKey;
           
@@ -1378,7 +1786,7 @@
           }
           
           optionsHTML += `
-            <div class="p-3 rounded-lg border-2 ${bgClass} ${isPicked || isCorrect ? 'font-semibold' : ''}">
+            <div class="p-2 rounded-lg border-2 ${bgClass} ${isPicked || isCorrect ? 'font-semibold' : ''}">
               <div class="flex items-start gap-2">
                 <span class="font-bold ${textClass}">${key}.</span>
                 <span class="${textClass} flex-1">${icon}${text}</span>
@@ -1390,8 +1798,8 @@
         });
         
         questionsHTML += `
-          <div class="bg-white dark:bg-gray-800 rounded-[2rem] p-6 shadow-lg border ${ok ? 'border-green-200 dark:border-green-800' : 'border-red-200 dark:border-red-800'}">
-            <div class="flex items-start justify-between mb-4">
+          <div class="bg-white dark:bg-gray-800 rounded-[2rem] p-4 shadow-lg border ${ok ? 'border-green-200 dark:border-green-800' : 'border-red-200 dark:border-red-800'}">
+            <div class="flex items-start justify-between mb-3">
               <div class="flex-1">
                 <div class="flex items-center gap-2 mb-2">
                   <span class="px-3 py-1 rounded-full ${ok ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'} text-xs font-bold">
@@ -1399,11 +1807,11 @@
                   </span>
                   ${ok ? '<span class="text-green-600 dark:text-green-400 font-bold"><i class="fas fa-check-circle"></i> Đúng</span>' : '<span class="text-red-600 dark:text-red-400 font-bold"><i class="fas fa-times-circle"></i> Sai</span>'}
                 </div>
-                <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4">${q.text}</h3>
+                <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-3">${q.text}</h3>
               </div>
             </div>
             
-            <div class="space-y-2 mb-4">
+            <div class="space-y-2 mb-3">
               ${optionsHTML}
             </div>
             
@@ -1422,10 +1830,10 @@
       });
       
       area.innerHTML = `
-        <div class="animate-fade-in max-w-4xl mx-auto">
+        <div class=" max-w-4xl mx-auto">
           <div class="flex items-center justify-between mb-6">
             <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Xem lại toàn bộ bài làm</h2>
-            <button onclick="window.openResultsOverview()" class="px-4 py-2 rounded-xl bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-semibold hover:bg-gray-200 dark:hover:bg-gray-600 transition">
+            <button onclick="window.openResultsOverview()" class="px-4 py-2 rounded-xl bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-semibold hover:bg-gray-200 dark:hover:bg-gray-600">
               <i class="fas fa-arrow-left mr-2"></i>Quay lại kết quả
             </button>
           </div>
@@ -1435,7 +1843,7 @@
           </div>
           
           <div class="mt-6 text-center">
-            <button onclick="window.openResultsOverview()" class="px-6 py-3 rounded-xl bg-blue-600 text-white font-bold hover:bg-blue-700 transition shadow-lg">
+            <button onclick="window.openResultsOverview()" class="px-6 py-3 rounded-xl bg-blue-600 text-white font-bold hover:bg-blue-700 shadow-lg">
               <i class="fas fa-arrow-left mr-2"></i>Quay lại kết quả
             </button>
           </div>
@@ -1478,7 +1886,31 @@
 
     window.startRunnerWithPool = function (mode, pool) {
       const qs = pool || [];
-      window.runnerState = { mode, questions: qs, currentIndex: 0, selected: Array(qs.length).fill(null), checked: Array(qs.length).fill(false), submitted: false, score: null, wrongSet: new Set() };
+      const gameState = mode === 'game' ? {
+        timeLeft: 30,
+        score: 0,
+        streak: 0,
+        timerInterval: null
+      } : {};
+      
+      window.runnerState = { 
+        mode, 
+        questions: qs, 
+        currentIndex: 0, 
+        selected: Array(qs.length).fill(null), 
+        checked: Array(qs.length).fill(false), 
+        submitted: false, 
+        score: null, 
+        wrongSet: new Set(),
+        resultsShown: false,
+        ...gameState
+      };
+      
+      // Start timer for game mode
+      if (mode === 'game') {
+        window.startGameTimer();
+      }
+      
       window.renderRunner();
     };
 
@@ -1487,6 +1919,172 @@
       s.selected[s.currentIndex] = key;
       if (s.mode === 'practice' && s.checked[s.currentIndex]) s.checked[s.currentIndex] = false;
       window.renderRunner();
+    };
+
+    // Game mode functions
+    window.startGameTimer = function () {
+      const s = window.runnerState;
+      if (!s || s.mode !== 'game' || s.submitted) return;
+      
+      // Clear existing timer
+      if (s.timerInterval) clearInterval(s.timerInterval);
+      
+      s.timeLeft = 30;
+      s.timerInterval = setInterval(() => {
+        s.timeLeft--;
+        window.renderRunner();
+        
+        if (s.timeLeft <= 0) {
+          clearInterval(s.timerInterval);
+          // Time's up - move to next question
+          window.nextQuestionGame(false);
+        }
+      }, 1000);
+    };
+
+    window.pickOptionGame = function (key) {
+      const s = window.runnerState;
+      if (!s || s.mode !== 'game' || s.submitted || s.selected[s.currentIndex]) return;
+      
+      s.selected[s.currentIndex] = key;
+      const q = s.questions[s.currentIndex];
+      const isCorrect = q.correctKey && key === q.correctKey;
+      
+      // Clear timer
+      if (s.timerInterval) {
+        clearInterval(s.timerInterval);
+        s.timerInterval = null;
+      }
+      
+      // Calculate score
+      const baseScore = 100;
+      const timeBonus = Math.floor(s.timeLeft * 2); // 2 điểm mỗi giây còn lại
+      const streakMultiplier = s.streak > 0 ? 1 + (s.streak * 0.1) : 1; // 10% bonus mỗi streak
+      
+      if (isCorrect) {
+        const points = Math.floor((baseScore + timeBonus) * streakMultiplier);
+        s.score = (s.score || 0) + points;
+        s.streak = (s.streak || 0) + 1;
+        
+        // Confetti effect
+        if (typeof confetti === 'function') {
+          confetti({ 
+            particleCount: 50, 
+            spread: 60, 
+            origin: { y: 0.6 },
+            colors: ['#10b981', '#3b82f6', '#8b5cf6', '#ec4899']
+          });
+        }
+        
+        // Show success message
+        window.showGameMessage(`+${points} điểm! 🔥`, 'success');
+        
+        // Move to next question after short delay
+        setTimeout(() => {
+          window.nextQuestionGame(true);
+        }, 1500);
+      } else {
+        s.streak = 0; // Reset streak
+        s.wrongSet.add(s.currentIndex);
+        
+        // Show error message
+        window.showGameMessage(`Sai rồi! Đáp án đúng là ${q.correctKey}`, 'error');
+        
+        // Move to next question after short delay
+        setTimeout(() => {
+          window.nextQuestionGame(false);
+        }, 2000);
+      }
+      
+      window.renderRunner();
+    };
+
+    window.nextQuestionGame = function (wasCorrect) {
+      const s = window.runnerState;
+      if (!s || s.mode !== 'game') return;
+      
+      if (s.currentIndex < s.questions.length - 1) {
+        s.currentIndex++;
+        s.selected[s.currentIndex] = null;
+        s.timeLeft = 30;
+        window.startGameTimer();
+        window.renderRunner();
+      } else {
+        // Game over
+        window.endGame();
+      }
+    };
+
+    window.showGameMessage = function (message, type) {
+      const area = document.getElementById('runnerArea');
+      if (!area) return;
+      
+      const bgColor = type === 'success' ? 'bg-green-500' : 'bg-red-500';
+      const messageEl = document.createElement('div');
+      messageEl.className = `fixed top-24 left-1/2 transform -translate-x-1/2 z-[200] ${bgColor} text-white px-6 py-3 rounded-xl shadow-2xl font-bold text-lg animate-bounce`;
+      messageEl.textContent = message;
+      document.body.appendChild(messageEl);
+      
+      setTimeout(() => {
+        messageEl.remove();
+      }, 2000);
+    };
+
+    window.endGame = function () {
+      const s = window.runnerState;
+      if (!s || s.mode !== 'game') return;
+      
+      if (s.timerInterval) {
+        clearInterval(s.timerInterval);
+        s.timerInterval = null;
+      }
+      
+      s.submitted = true;
+      const total = s.questions.length;
+      const correct = total - s.wrongSet.size;
+      const finalScore = s.score || 0;
+      
+      // Big confetti
+      if (typeof confetti === 'function') {
+        confetti({ 
+          particleCount: 200, 
+          spread: 100, 
+          origin: { y: 0.5 },
+          colors: ['#10b981', '#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b']
+        });
+      }
+      
+      const area = document.getElementById('runnerArea');
+      if (!area) return;
+      
+      area.innerHTML = `
+        <div class=" max-w-3xl mx-auto text-center">
+          <div class="bg-white dark:bg-gray-800 rounded-[2rem] p-8 shadow-xl border border-gray-100 dark:border-gray-700 mb-6">
+            <div class="text-6xl mb-4">🎮</div>
+            <div class="text-gray-500 text-sm font-bold uppercase tracking-wider mb-2">Game Over!</div>
+            <div class="text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-500 mb-4">${finalScore.toLocaleString()} điểm</div>
+            <div class="flex justify-center gap-4 mb-6">
+              <div class="px-4 py-2 rounded-xl bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 font-bold">
+                <i class="fas fa-check-circle mr-2"></i>Đúng: ${correct}
+              </div>
+              <div class="px-4 py-2 rounded-xl bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 font-bold">
+                <i class="fas fa-times-circle mr-2"></i>Sai: ${total - correct}
+              </div>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 max-w-lg mx-auto">
+              <button class="py-3 rounded-xl bg-gray-100 dark:bg-gray-700 font-semibold hover:bg-gray-200 dark:hover:bg-gray-600" onclick="window.viewFullReview()">
+                <i class="fas fa-eye mr-2"></i>Xem lại
+              </button>
+              <button class="py-3 rounded-xl bg-purple-600 text-white font-bold hover:bg-purple-700" onclick="window.redoAll()">
+                <i class="fas fa-redo mr-2"></i>Chơi lại
+              </button>
+              <button class="py-3 rounded-xl bg-blue-600 text-white font-bold hover:bg-blue-700" onclick="window.backToManager()">
+                <i class="fas fa-home mr-2"></i>Về trang chủ
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
     };
 
     window.pickOptionExam = function (questionIndex, key) {
@@ -1538,7 +2136,15 @@
         window.startRunnerWithPool(s.mode, pool);
     };
     window.redoAll = function() { window.startRunner(window.runnerState?.mode || 'practice'); };
-    window.backToManager = function() { window.runnerState = null; window.openManageQuizzes(); };
+    window.backToManager = function() { 
+      // Clear game timer if exists
+      const s = window.runnerState;
+      if (s && s.timerInterval) {
+        clearInterval(s.timerInterval);
+      }
+      window.runnerState = null; 
+      window.openManageQuizzes(); 
+    };
     window.jumpToQuestion = function(i) { if(window.runnerState) { window.runnerState.currentIndex = i; window.renderRunner(); } };
 
 
@@ -1547,11 +2153,31 @@
       const raw = document.getElementById('rawContent');
       const key = document.getElementById('answerKeyRaw');
       if (raw) raw.addEventListener('input', window.updatePreview);
-      if (key) key.addEventListener('input', window.updatePreview);
+      if (key) {
+        key.addEventListener('input', function() {
+          // Chỉ cập nhật preview nếu đang ở bước 2
+          if (window.currentStep === 2) {
+            window.updateAnswerPreview();
+          }
+        });
+      }
       
       const theme = localStorage.getItem('quiz_app_theme');
       if (theme === 'dark') document.documentElement.classList.add('dark');
-      window.setView('appLandingSection', { push: false });
+      
+      // Xử lý share link từ URL
+      const urlParams = new URLSearchParams(window.location.search);
+      const shareToken = urlParams.get('share');
+      if (shareToken && window.handleShareLink) {
+        // Đợi auth state ready
+        setTimeout(() => {
+          if (window.currentUser) {
+            window.handleShareLink(shareToken);
+          }
+        }, 1000);
+      } else {
+        window.setView('appLandingSection', { push: false });
+      }
     });
   </script>
 
@@ -1649,6 +2275,27 @@
       if (!window.currentUser) return;
       const name = document.getElementById('saveQuizName')?.value.trim();
       if (!name) { alert('Nhập tên bộ đề!'); return; }
+      
+      // Đảm bảo đồng bộ đáp án từ input trước khi lưu
+      const answerKeyInput = document.getElementById('answerKeyRaw');
+      if (answerKeyInput && window.masterQuestions) {
+        const answerText = answerKeyInput.value;
+        const cleanKeys = answerText.replace(/[^a-dA-D]/g, '').toUpperCase().split('');
+        window.masterQuestions.forEach((q, index) => {
+          if (cleanKeys[index]) {
+            q.correctKey = cleanKeys[index];
+          }
+        });
+      }
+      
+      // Kiểm tra xem có câu hỏi nào chưa có đáp án không
+      const questionsWithoutAnswer = window.masterQuestions?.filter(q => !q.correctKey) || [];
+      if (questionsWithoutAnswer.length > 0) {
+        if (!confirm(`Có ${questionsWithoutAnswer.length} câu hỏi chưa có đáp án. Bạn có muốn tiếp tục lưu không?`)) {
+          return;
+        }
+      }
+      
       const folderSelect = document.getElementById('saveFolderSelect');
       let selectedFolder = (folderSelect && folderSelect.value !== 'root') ? folderSelect.value : null;
       window.closeModal('saveQuizModal'); window.safeClassList('loadingOverlay', 'remove', 'hidden');
@@ -2046,6 +2693,436 @@
        await updateDoc(doc(db, 'artifacts', appId, 'users', window.currentUser.uid, col, item.id), updateData);
        await window.refreshFileList();
     };
+
+    // ==========================================
+    // SHARING FUNCTIONS
+    // ==========================================
+    window.openShareModal = function () {
+      if (!window.itemToMove) return;
+      window.closeModal('itemActionModal');
+      const nameEl = document.getElementById('shareItemName');
+      if (nameEl) nameEl.innerText = window.itemToMove.name || '';
+      const linkInput = document.getElementById('shareLinkInput');
+      if (linkInput) linkInput.value = '';
+      window.loadSharedWithList();
+      window.showModal('shareModal');
+    };
+
+    window.shareWithEmail = async function () {
+      if (!window.currentUser || !window.itemToMove) return;
+      const emailInput = document.getElementById('shareEmailInput');
+      const email = (emailInput?.value || '').trim().toLowerCase();
+      
+      if (!email || !email.includes('@')) {
+        window.showToast('Vui lòng nhập email hợp lệ!');
+        return;
+      }
+
+      window.safeClassList('loadingOverlay', 'remove', 'hidden');
+      try {
+        // Tìm user theo email
+        const usersRef = collection(db, 'artifacts', appId, 'users');
+        const usersSnap = await getDocs(usersRef);
+        let targetUserId = null;
+        
+        usersSnap.forEach((userDoc) => {
+          const userData = userDoc.data();
+          if (userData.email && userData.email.toLowerCase() === email) {
+            targetUserId = userDoc.id;
+          }
+        });
+
+        if (!targetUserId) {
+          window.showToast('Không tìm thấy người dùng với email này!');
+          return;
+        }
+
+        if (targetUserId === window.currentUser.uid) {
+          window.showToast('Bạn không thể chia sẻ với chính mình!');
+          return;
+        }
+
+        // Tạo share record
+        const shareData = {
+          itemId: window.itemToMove.id,
+          itemType: window.itemToMove.type,
+          itemName: window.itemToMove.name,
+          sharedBy: window.currentUser.uid,
+          sharedByEmail: window.currentUser.email,
+          sharedByDisplayName: window.currentUser.displayName || '',
+          sharedWith: targetUserId,
+          sharedWithEmail: email,
+          createdAt: Date.now(),
+          status: 'active'
+        };
+
+        await addDoc(collection(db, 'artifacts', appId, 'users', targetUserId, 'shared'), shareData);
+        
+        // Lưu vào sharedBy để quản lý
+        await addDoc(collection(db, 'artifacts', appId, 'users', window.currentUser.uid, 'sharedBy'), {
+          ...shareData,
+          sharedWithEmail: email
+        });
+
+        if (emailInput) emailInput.value = '';
+        window.showToast(`Đã chia sẻ với ${email}!`);
+        window.loadSharedWithList();
+      } catch (e) {
+        console.error('Error sharing:', e);
+        window.showToast('Lỗi chia sẻ: ' + (e.message || 'Không thể chia sẻ'));
+      } finally {
+        window.safeClassList('loadingOverlay', 'add', 'hidden');
+      }
+    };
+
+    window.generateShareLink = async function () {
+      if (!window.currentUser || !window.itemToMove) return;
+      
+      window.safeClassList('loadingOverlay', 'remove', 'hidden');
+      try {
+        // Tạo share token
+        const shareToken = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+        
+        // Lưu share link vào Firestore
+        const shareLinkData = {
+          itemId: window.itemToMove.id,
+          itemType: window.itemToMove.type,
+          itemName: window.itemToMove.name,
+          sharedBy: window.currentUser.uid,
+          sharedByEmail: window.currentUser.email,
+          sharedByDisplayName: window.currentUser.displayName || '',
+          token: shareToken,
+          createdAt: Date.now(),
+          status: 'active'
+        };
+
+        await setDoc(doc(db, 'artifacts', appId, 'shareLinks', shareToken), shareLinkData);
+        
+        const shareUrl = `${window.location.origin}${window.location.pathname}?share=${shareToken}`;
+        const linkInput = document.getElementById('shareLinkInput');
+        if (linkInput) linkInput.value = shareUrl;
+        
+        window.showToast('Đã tạo link chia sẻ!');
+      } catch (e) {
+        console.error('Error generating share link:', e);
+        window.showToast('Lỗi tạo link: ' + (e.message || 'Không thể tạo link'));
+      } finally {
+        window.safeClassList('loadingOverlay', 'add', 'hidden');
+      }
+    };
+
+    window.copyShareLink = function () {
+      const linkInput = document.getElementById('shareLinkInput');
+      if (!linkInput || !linkInput.value) {
+        window.showToast('Chưa có link chia sẻ!');
+        return;
+      }
+      
+      linkInput.select();
+      linkInput.setSelectionRange(0, 99999);
+      try {
+        document.execCommand('copy');
+        const btn = document.getElementById('copyLinkBtn');
+        if (btn) {
+          const originalHTML = btn.innerHTML;
+          btn.innerHTML = '<i class="fas fa-check"></i>';
+          btn.classList.add('bg-green-600');
+          setTimeout(() => {
+            btn.innerHTML = originalHTML;
+            btn.classList.remove('bg-green-600');
+          }, 2000);
+        }
+        window.showToast('Đã sao chép link!');
+      } catch (e) {
+        window.showToast('Không thể sao chép. Vui lòng copy thủ công.');
+      }
+    };
+
+    window.loadSharedWithList = async function () {
+      if (!window.currentUser || !window.itemToMove) return;
+      
+      try {
+        const sharedByRef = collection(db, 'artifacts', appId, 'users', window.currentUser.uid, 'sharedBy');
+        const sharedBySnap = await getDocs(sharedByRef);
+        const sharedList = document.getElementById('sharedWithList');
+        
+        if (!sharedList) return;
+        
+        const shares = [];
+        sharedBySnap.forEach((docSnap) => {
+          const data = docSnap.data();
+          if (data.itemId === window.itemToMove.id && data.itemType === window.itemToMove.type) {
+            shares.push({
+              ...data,
+              docId: docSnap.id
+            });
+          }
+        });
+
+        if (shares.length === 0) {
+          sharedList.innerHTML = '<p class="text-xs text-gray-400 text-center py-2">Chưa có ai được chia sẻ</p>';
+          return;
+        }
+
+        sharedList.innerHTML = shares.map((share) => `
+          <div class="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800 rounded-lg">
+            <div class="flex items-center gap-2">
+              <i class="fas fa-user text-blue-500"></i>
+              <span class="text-sm text-gray-700 dark:text-gray-300">${share.sharedWithEmail || 'N/A'}</span>
+            </div>
+            <button onclick="window.removeShare('${share.sharedWith}', '${share.docId}')" class="text-red-500 hover:text-red-700 text-xs">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+        `).join('');
+      } catch (e) {
+        console.error('Error loading shared with list:', e);
+      }
+    };
+
+    window.removeShare = async function (targetUserId, shareDocId) {
+      if (!window.currentUser || !confirm('Bạn có chắc muốn hủy chia sẻ?')) return;
+      
+      window.safeClassList('loadingOverlay', 'remove', 'hidden');
+      try {
+        // Xóa từ sharedBy của người chia sẻ
+        await deleteDoc(doc(db, 'artifacts', appId, 'users', window.currentUser.uid, 'sharedBy', shareDocId));
+        
+        // Xóa từ shared của người được chia sẻ
+        const sharedRef = collection(db, 'artifacts', appId, 'users', targetUserId, 'shared');
+        const sharedSnap = await getDocs(sharedRef);
+        sharedSnap.forEach(async (sharedDoc) => {
+          const data = sharedDoc.data();
+          if (data.itemId === window.itemToMove.id && data.itemType === window.itemToMove.type && data.sharedBy === window.currentUser.uid) {
+            await deleteDoc(doc(db, 'artifacts', appId, 'users', targetUserId, 'shared', sharedDoc.id));
+          }
+        });
+
+        window.showToast('Đã hủy chia sẻ!');
+        window.loadSharedWithList();
+      } catch (e) {
+        console.error('Error removing share:', e);
+        window.showToast('Lỗi hủy chia sẻ');
+      } finally {
+        window.safeClassList('loadingOverlay', 'add', 'hidden');
+      }
+    };
+
+    window.openSharedSection = function () {
+      if (!window.currentUser) {
+        window.showToast('Vui lòng đăng nhập để xem file được chia sẻ.');
+        window.goLanding();
+        return;
+      }
+      window.setView('sharedSection');
+      setTimeout(() => {
+        if (window.refreshSharedList) window.refreshSharedList();
+      }, 100);
+    };
+
+    window.refreshSharedList = async function () {
+      if (!window.currentUser) return;
+      
+      window.safeClassList('loadingOverlay', 'remove', 'hidden');
+      try {
+        const sharedRef = collection(db, 'artifacts', appId, 'users', window.currentUser.uid, 'shared');
+        const sharedSnap = await getDocs(sharedRef);
+        
+        const sharedItems = [];
+        sharedSnap.forEach((doc) => {
+          const data = doc.data();
+          if (data.status === 'active') {
+            sharedItems.push({
+              id: doc.id,
+              shareDocId: doc.id,
+              itemId: data.itemId,
+              itemType: data.itemType,
+              itemName: data.itemName,
+              sharedBy: data.sharedBy,
+              sharedByEmail: data.sharedByEmail,
+              sharedByDisplayName: data.sharedByDisplayName,
+              createdAt: data.createdAt
+            });
+          }
+        });
+
+        const listBody = document.getElementById('sharedListBody');
+        if (!listBody) return;
+
+        if (sharedItems.length === 0) {
+          listBody.innerHTML = `
+            <div class="flex flex-col items-center justify-center py-16 text-gray-400">
+              <i class="fas fa-share-nodes text-4xl mb-3 opacity-30"></i>
+              <span class="italic">Chưa có file nào được chia sẻ với bạn.</span>
+            </div>
+          `;
+          return;
+        }
+
+        let contentHTML = '';
+        sharedItems.forEach((item) => {
+          const iconColorClass = item.itemType === 'folder' ? 'text-yellow-400' : 'text-blue-500';
+          const iconHTML = item.itemType === 'folder'
+            ? `<div class="w-10 h-10 rounded-xl bg-yellow-50 dark:bg-yellow-900/20 flex items-center justify-center mr-3 ${iconColorClass}"><i class="fas fa-folder text-xl"></i></div>`
+            : `<div class="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center mr-3 ${iconColorClass}"><i class="fas fa-file-lines text-xl"></i></div>`;
+
+          const clickAction = item.itemType === 'folder'
+            ? `window.importSharedItem('${item.shareDocId}', 'folder', '${item.itemId}', '${item.sharedBy}')`
+            : `window.importSharedItem('${item.shareDocId}', 'quiz', '${item.itemId}', '${item.sharedBy}')`;
+
+          contentHTML += `
+            <div class="grid grid-cols-12 gap-2 px-4 py-3 border-b border-gray-100 dark:border-gray-700/50 items-center group hover:bg-white dark:hover:bg-gray-800/80 cursor-pointer rounded-lg mx-2 my-1"
+                 onclick="${clickAction}">
+              <div class="col-span-6 flex items-center truncate">
+                ${iconHTML}
+                <div class="flex-1 min-w-0">
+                  <span class="truncate font-semibold text-gray-700 dark:text-gray-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 block">${item.itemName}</span>
+                  <span class="text-xs text-gray-400">Chia sẻ bởi: ${item.sharedByDisplayName || item.sharedByEmail || 'N/A'}</span>
+                </div>
+              </div>
+              <div class="col-span-3 text-xs text-gray-400">${item.sharedByEmail || 'N/A'}</div>
+              <div class="col-span-3 flex items-center justify-end gap-3">
+                 <button class="px-3 py-1.5 rounded-lg bg-green-600 text-white text-xs font-bold hover:bg-green-700" 
+                         onclick="event.stopPropagation(); window.importSharedItem('${item.shareDocId}', '${item.itemType}', '${item.itemId}', '${item.sharedBy}')">
+                   <i class="fas fa-download mr-1"></i>Import
+                 </button>
+              </div>
+            </div>`;
+        });
+
+        listBody.innerHTML = contentHTML;
+      } catch (e) {
+        console.error('Error refreshing shared list:', e);
+        window.showToast('Lỗi tải danh sách: ' + (e.message || 'Không thể tải dữ liệu'));
+      } finally {
+        window.safeClassList('loadingOverlay', 'add', 'hidden');
+      }
+    };
+
+    window.importSharedItem = async function (shareDocId, itemType, originalItemId, originalOwnerId) {
+      if (!window.currentUser) return;
+      
+      if (!confirm(`Bạn có muốn import "${itemType === 'folder' ? 'thư mục' : 'bộ đề'}" này vào thư viện của bạn?`)) {
+        return;
+      }
+
+      window.safeClassList('loadingOverlay', 'remove', 'hidden');
+      try {
+        let ownerId = originalOwnerId;
+        
+        // Nếu có shareDocId, lấy thông tin từ share doc
+        if (shareDocId) {
+          const shareDocRef = doc(db, 'artifacts', appId, 'users', window.currentUser.uid, 'shared', shareDocId);
+          const shareDoc = await getDoc(shareDocRef);
+          if (shareDoc.exists()) {
+            const shareData = shareDoc.data();
+            ownerId = shareData.sharedBy;
+            originalItemId = shareData.itemId;
+            itemType = shareData.itemType;
+          }
+        }
+
+        if (!ownerId) {
+          throw new Error('Không tìm thấy thông tin người chia sẻ');
+        }
+
+        // Lấy dữ liệu gốc từ người chia sẻ
+        const col = itemType === 'folder' ? 'folders' : 'quizzes';
+        const originalDocRef = doc(db, 'artifacts', appId, 'users', ownerId, col, originalItemId);
+        const originalDoc = await getDoc(originalDocRef);
+        
+        if (!originalDoc.exists()) {
+          throw new Error('File gốc không tồn tại hoặc đã bị xóa');
+        }
+
+        const originalData = originalDoc.data();
+        
+        // Tạo bản sao trong thư viện của user hiện tại
+        const newData = {
+          ...originalData,
+          name: `${originalData.name} (Đã import)`,
+          importedFrom: ownerId,
+          importedAt: Date.now(),
+          timestamp: Date.now()
+        };
+
+        // Nếu là folder, cần import cả quizzes bên trong
+        if (itemType === 'folder') {
+          const newFolderRef = await addDoc(collection(db, 'artifacts', appId, 'users', window.currentUser.uid, 'folders'), newData);
+          
+          // Import quizzes trong folder
+          const quizzesRef = collection(db, 'artifacts', appId, 'users', ownerId, 'quizzes');
+          const quizzesSnap = await getDocs(quizzesRef);
+          quizzesSnap.forEach(async (quizDoc) => {
+            const quizData = quizDoc.data();
+            if (quizData.folderId === originalItemId) {
+              await addDoc(collection(db, 'artifacts', appId, 'users', window.currentUser.uid, 'quizzes'), {
+                ...quizData,
+                folderId: newFolderRef.id,
+                name: `${quizData.name} (Đã import)`,
+                importedFrom: ownerId,
+                importedAt: Date.now(),
+                timestamp: Date.now()
+              });
+            }
+          });
+        } else {
+          // Import quiz
+          await addDoc(collection(db, 'artifacts', appId, 'users', window.currentUser.uid, 'quizzes'), newData);
+        }
+
+        window.showToast('Đã import thành công!');
+        window.openManageQuizzes();
+      } catch (e) {
+        console.error('Error importing shared item:', e);
+        window.showToast('Lỗi import: ' + (e.message || 'Không thể import'));
+      } finally {
+        window.safeClassList('loadingOverlay', 'add', 'hidden');
+      }
+    };
+
+    // Xử lý share link từ URL
+    window.handleShareLink = async function (token) {
+      if (!window.currentUser) {
+        window.showToast('Vui lòng đăng nhập để xem file được chia sẻ.');
+        window.goLanding();
+        return;
+      }
+
+      window.safeClassList('loadingOverlay', 'remove', 'hidden');
+      try {
+        const shareLinkRef = doc(db, 'artifacts', appId, 'shareLinks', token);
+        const shareLinkDoc = await getDoc(shareLinkRef);
+        
+        if (!shareLinkDoc.exists()) {
+          window.showToast('Link chia sẻ không hợp lệ hoặc đã hết hạn!');
+          window.setView('appLandingSection', { push: false });
+          return;
+        }
+
+        const shareData = shareLinkDoc.data();
+        if (shareData.status !== 'active') {
+          window.showToast('Link chia sẻ đã bị vô hiệu hóa!');
+          window.setView('appLandingSection', { push: false });
+          return;
+        }
+
+        // Hiển thị dialog xác nhận import
+        if (confirm(`Bạn có muốn import "${shareData.itemName}" (${shareData.itemType === 'folder' ? 'thư mục' : 'bộ đề'}) vào thư viện của bạn?`)) {
+          await window.importSharedItem('', shareData.itemType, shareData.itemId, shareData.sharedBy);
+        }
+        
+        // Xóa token khỏi URL
+        window.history.replaceState({}, document.title, window.location.pathname);
+        window.setView('appLandingSection', { push: false });
+      } catch (e) {
+        console.error('Error handling share link:', e);
+        window.showToast('Lỗi xử lý link chia sẻ: ' + (e.message || 'Không thể xử lý'));
+        window.setView('appLandingSection', { push: false });
+      } finally {
+        window.safeClassList('loadingOverlay', 'add', 'hidden');
+      }
+    };
   </script>
 </head>
 
@@ -2063,7 +3140,7 @@
     </div>
   </div>
 
-  <div id="toast" class="hidden fixed top-24 left-1/2 -translate-x-1/2 z-[60] transition duration-300 translate-y-10 opacity-0">
+  <div id="toast" class="hidden fixed top-24 left-1/2 -translate-x-1/2 z-[60] duration-300 translate-y-10 opacity-0">
     <div class="px-6 py-3 rounded-2xl shadow-xl bg-gray-900/90 text-white backdrop-blur border border-white/10 flex items-center gap-3">
       <i class="fas fa-info-circle text-blue-400"></i>
       <span id="toastText" class="font-medium text-sm">Notification</span>
@@ -2072,7 +3149,7 @@
 
   <header class="fixed top-0 w-full z-40 bg-white/70 dark:bg-gray-950/70 backdrop-blur-md border-b border-gray-200/50 dark:border-gray-800/50">
     <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
-      <div class="flex items-center gap-3 cursor-pointer hover:opacity-80 transition" onclick="window.currentUser ? window.goHome() : window.goAppLanding()">
+      <div class="flex items-center gap-3 cursor-pointer hover:opacity-80" onclick="window.currentUser ? window.goHome() : window.goAppLanding()">
         <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 text-white flex items-center justify-center font-bold text-xl shadow-lg shadow-blue-500/30">F</div>
         <div>
           <div class="font-bold text-lg leading-tight tracking-tight">FastStudy</div>
@@ -2081,10 +3158,10 @@
       </div>
       
       <div class="flex items-center gap-2">
-        <button id="backBtn" class="hidden w-10 h-10 rounded-xl flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-800 transition text-gray-500" onclick="window.goBack()">
+        <button id="backBtn" class="hidden w-10 h-10 rounded-xl flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500" onclick="window.goBack()">
            <i class="fas fa-arrow-left"></i>
         </button>
-        <button class="w-10 h-10 rounded-xl flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-800 transition text-gray-500" onclick="window.toggleTheme()">
+        <button class="w-10 h-10 rounded-xl flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500" onclick="window.toggleTheme()">
            <i class="fas fa-moon dark:hidden"></i>
            <i class="fas fa-sun hidden dark:inline text-yellow-400"></i>
         </button>
@@ -2092,7 +3169,7 @@
         <div class="h-6 w-px bg-gray-200 dark:bg-gray-700 mx-1"></div>
         
         <!-- Nút đăng nhập (hiển thị khi chưa đăng nhập) -->
-        <button id="headerLoginBtn" class="px-4 py-2 rounded-xl bg-blue-600 text-white text-sm font-bold hover:bg-blue-700 transition shadow-lg shadow-blue-500/20" onclick="window.goLanding()">
+        <button id="headerLoginBtn" class="px-4 py-2 rounded-xl bg-blue-600 text-white text-sm font-bold hover:bg-blue-700 shadow-lg shadow-blue-500/20" onclick="window.goLanding()">
           <i class="fas fa-sign-in-alt mr-2"></i>Đăng nhập
         </button>
         
@@ -2102,10 +3179,10 @@
           <span id="headerProBadge" class="hidden px-2 py-1 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 text-white text-[10px] font-bold">
             <i class="fas fa-crown mr-1"></i>PRO
           </span>
-          <button id="headerAvatarBtn" class="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 overflow-hidden hover:ring-2 ring-blue-500 transition" onclick="window.goProfile()">
+          <button id="headerAvatarBtn" class="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 overflow-hidden hover:ring-2 ring-blue-500" onclick="window.goProfile()">
              <img id="headerAvatarImg" src="https://api.dicebear.com/7.x/notionists/svg?seed=Felix" alt="avatar" class="w-full h-full object-cover">
           </button>
-          <button id="headerLogoutBtn" class="px-4 py-2 rounded-xl bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm font-bold hover:bg-red-100 dark:hover:bg-red-900/30 transition" onclick="window.handleLogout()" title="Đăng xuất">
+          <button id="headerLogoutBtn" class="px-4 py-2 rounded-xl bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm font-bold hover:bg-red-100 dark:hover:bg-red-900/30" onclick="window.handleLogout()" title="Đăng xuất">
             <i class="fas fa-sign-out-alt mr-2"></i>Đăng xuất
           </button>
         </div>
@@ -2115,7 +3192,7 @@
 
   <main class="max-w-6xl mx-auto px-4 pt-28 pb-10 min-h-screen">
     
-    <section id="landingSection" class="hidden animate-fade-in max-w-md mx-auto mt-10">
+    <section id="landingSection" class="hidden  max-w-md mx-auto mt-10">
       <div class="fs-card p-8 rounded-[2rem]">
         <div class="text-center mb-8">
           <h1 id="authTitle" class="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 mb-2">Chào mừng trở lại</h1>
@@ -2153,7 +3230,7 @@
       </div>
     </section>
 
-    <section id="appLandingSection" class="hidden animate-fade-in">
+    <section id="appLandingSection" class="hidden ">
        <div class="text-center py-10">
           <div class="inline-block px-4 py-1.5 rounded-full bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-300 text-xs font-bold tracking-wider uppercase mb-4 border border-blue-100 dark:border-blue-800">
              Cloud Edition 2.0
@@ -2171,7 +3248,7 @@
        </div>
 
        <div class="grid md:grid-cols-3 gap-6">
-          <div class="fs-card p-6 rounded-[2rem] hover:-translate-y-1 transition cursor-pointer" onclick="window.openFastQuiz()">
+          <div class="fs-card p-6 rounded-[2rem]  cursor-pointer" onclick="window.openFastQuiz()">
              <div class="w-14 h-14 rounded-2xl bg-blue-100 dark:bg-blue-900/30 text-blue-600 flex items-center justify-center text-2xl mb-5">
                 <i class="fas fa-bolt"></i>
              </div>
@@ -2179,7 +3256,7 @@
              <p class="text-gray-500 text-sm leading-relaxed">Tạo đề nhanh từ văn bản, hỗ trợ nhiều chế độ thi và tự động chấm điểm.</p>
           </div>
           
-          <div class="fs-card p-6 rounded-[2rem] hover:-translate-y-1 transition opacity-75 grayscale hover:grayscale-0 hover:opacity-100 cursor-not-allowed" onclick="window.showComingSoon('FastNote')">
+          <div class="fs-card p-6 rounded-[2rem]  opacity-75 grayscale hover:grayscale-0 hover:opacity-100 cursor-not-allowed" onclick="window.showComingSoon('FastNote')">
              <div class="w-14 h-14 rounded-2xl bg-purple-100 dark:bg-purple-900/30 text-purple-600 flex items-center justify-center text-2xl mb-5">
                 <i class="fas fa-sticky-note"></i>
              </div>
@@ -2187,7 +3264,7 @@
              <p class="text-gray-500 text-sm leading-relaxed">Ghi chú bài giảng thông minh, tự động tóm tắt ý chính (AI Support).</p>
           </div>
 
-          <div class="fs-card p-6 rounded-[2rem] hover:-translate-y-1 transition opacity-75 grayscale hover:grayscale-0 hover:opacity-100 cursor-not-allowed" onclick="window.showComingSoon('FastFlash')">
+          <div class="fs-card p-6 rounded-[2rem]  opacity-75 grayscale hover:grayscale-0 hover:opacity-100 cursor-not-allowed" onclick="window.showComingSoon('FastFlash')">
              <div class="w-14 h-14 rounded-2xl bg-green-100 dark:bg-green-900/30 text-green-600 flex items-center justify-center text-2xl mb-5">
                 <i class="fas fa-layer-group"></i>
              </div>
@@ -2197,9 +3274,9 @@
        </div>
     </section>
 
-    <section id="featureSelectionSection" class="hidden animate-fade-in">
+    <section id="featureSelectionSection" class="hidden ">
        <div class="mb-6">
-          <button onclick="window.goAppLanding()" class="px-4 py-2 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-semibold hover:bg-gray-200 dark:hover:bg-gray-700 transition flex items-center gap-2">
+          <button onclick="window.goAppLanding()" class="px-4 py-2 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-semibold hover:bg-gray-200 dark:hover:bg-gray-700 flex items-center gap-2">
              <i class="fas fa-arrow-left"></i>Trở về trang giới thiệu
           </button>
        </div>
@@ -2208,16 +3285,16 @@
           <p class="text-gray-500">Chọn một trong các tính năng để bắt đầu</p>
        </div>
        <div class="grid md:grid-cols-3 gap-6">
-          <div class="fs-card p-8 rounded-[2rem] hover:-translate-y-1 transition cursor-pointer" onclick="window.goHome()">
+          <div class="fs-card p-8 rounded-[2rem]  cursor-pointer" onclick="window.goHome()">
              <div class="w-16 h-16 rounded-2xl bg-blue-100 dark:bg-blue-900/30 text-blue-600 flex items-center justify-center text-3xl mb-5 mx-auto">
                 <i class="fas fa-bolt"></i>
              </div>
              <h3 class="text-2xl font-bold mb-3 text-center text-gray-900 dark:text-white">FastQuiz</h3>
              <p class="text-gray-500 text-sm leading-relaxed text-center mb-6">Tạo đề nhanh từ văn bản, hỗ trợ nhiều chế độ thi và tự động chấm điểm.</p>
-             <button class="w-full px-6 py-3 rounded-xl bg-blue-600 text-white font-bold shadow-lg shadow-blue-500/20 hover:-translate-y-0.5 transition">Chọn</button>
+             <button class="w-full px-6 py-3 rounded-xl bg-blue-600 text-white font-bold shadow-lg shadow-blue-500/20 ">Chọn</button>
           </div>
           
-          <div class="fs-card p-8 rounded-[2rem] hover:-translate-y-1 transition opacity-75 grayscale hover:grayscale-0 hover:opacity-100 cursor-not-allowed" onclick="window.showComingSoon('FastNote')">
+          <div class="fs-card p-8 rounded-[2rem]  opacity-75 grayscale hover:grayscale-0 hover:opacity-100 cursor-not-allowed" onclick="window.showComingSoon('FastNote')">
              <div class="w-16 h-16 rounded-2xl bg-purple-100 dark:bg-purple-900/30 text-purple-600 flex items-center justify-center text-3xl mb-5 mx-auto">
                 <i class="fas fa-sticky-note"></i>
              </div>
@@ -2226,7 +3303,7 @@
              <button class="w-full px-6 py-3 rounded-xl bg-gray-300 dark:bg-gray-700 text-gray-500 font-bold cursor-not-allowed" disabled>Sắp ra mắt</button>
           </div>
 
-          <div class="fs-card p-8 rounded-[2rem] hover:-translate-y-1 transition opacity-75 grayscale hover:grayscale-0 hover:opacity-100 cursor-not-allowed" onclick="window.showComingSoon('FastFlash')">
+          <div class="fs-card p-8 rounded-[2rem]  opacity-75 grayscale hover:grayscale-0 hover:opacity-100 cursor-not-allowed" onclick="window.showComingSoon('FastFlash')">
              <div class="w-16 h-16 rounded-2xl bg-green-100 dark:bg-green-900/30 text-green-600 flex items-center justify-center text-3xl mb-5 mx-auto">
                 <i class="fas fa-layer-group"></i>
              </div>
@@ -2237,26 +3314,26 @@
        </div>
     </section>
 
-    <section id="homeSection" class="hidden animate-fade-in">
+    <section id="homeSection" class="hidden ">
        <div class="mb-6">
-          <button onclick="window.goAppLanding()" class="px-4 py-2 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-semibold hover:bg-gray-200 dark:hover:bg-gray-700 transition flex items-center gap-2">
+          <button onclick="window.goAppLanding()" class="px-4 py-2 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-semibold hover:bg-gray-200 dark:hover:bg-gray-700 flex items-center gap-2">
              <i class="fas fa-arrow-left"></i>Trở về trang giới thiệu
           </button>
        </div>
        <div class="grid md:grid-cols-2 gap-6">
           <div class="fs-card p-8 rounded-[2rem] flex flex-col justify-center items-start bg-gradient-to-br from-blue-600 to-indigo-700 text-white border-none shadow-xl shadow-blue-500/20 relative overflow-hidden group cursor-pointer" onclick="window.startCreateNew()">
-             <div class="absolute right-[-20px] bottom-[-20px] text-9xl opacity-10 group-hover:scale-110 transition duration-500"><i class="fas fa-plus-circle"></i></div>
+             <div class="absolute right-[-20px] bottom-[-20px] text-9xl opacity-10 group- "><i class="fas fa-plus-circle"></i></div>
              <div class="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center mb-4 text-2xl backdrop-blur-sm"><i class="fas fa-plus"></i></div>
              <h2 class="text-2xl font-bold mb-2">Tạo bộ đề mới</h2>
              <p class="text-blue-100 text-sm mb-6 max-w-xs">Paste câu hỏi và đáp án, hệ thống sẽ tự động phân tích và tạo bài trắc nghiệm.</p>
-             <button class="px-5 py-2.5 rounded-xl bg-white text-blue-600 font-bold text-sm hover:bg-blue-50 transition">Bắt đầu ngay</button>
+             <button class="px-5 py-2.5 rounded-xl bg-white text-blue-600 font-bold text-sm hover:bg-blue-50">Bắt đầu ngay</button>
           </div>
 
-          <div class="fs-card p-8 rounded-[2rem] flex flex-col justify-center items-start group cursor-pointer hover:border-blue-400 transition" onclick="window.openManageQuizzes()">
+          <div class="fs-card p-8 rounded-[2rem] flex flex-col justify-center items-start group cursor-pointer hover:border-blue-400" onclick="window.openManageQuizzes()">
              <div class="w-12 h-12 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center mb-4 text-2xl"><i class="fas fa-folder-open"></i></div>
              <h2 class="text-2xl font-bold mb-2 text-gray-900 dark:text-white">Thư viện của tôi</h2>
              <p class="text-gray-500 text-sm mb-6 max-w-xs">Quản lý các bộ đề đã lưu, sắp xếp theo thư mục và xem lại lịch sử.</p>
-             <button class="px-5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 font-bold text-sm hover:bg-gray-50 dark:hover:bg-gray-800 transition">Mở thư viện</button>
+             <button class="px-5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 font-bold text-sm hover:bg-gray-50 dark:hover:bg-gray-800">Mở thư viện</button>
           </div>
        </div>
        
@@ -2276,7 +3353,7 @@
                    </div>
                 </div>
                 <p class="text-sm opacity-90 mb-4">Truy cập tất cả tính năng cao cấp và hỗ trợ ưu tiên</p>
-                <button onclick="window.showMembershipModal()" class="w-full px-6 py-3 rounded-xl bg-white text-purple-600 font-bold hover:bg-purple-50 transition shadow-lg">
+                <button onclick="window.showMembershipModal()" class="w-full px-6 py-3 rounded-xl bg-white text-purple-600 font-bold hover:bg-purple-50 shadow-lg">
                    <i class="fas fa-crown mr-2"></i>NÂNG CẤP PRO MIỄN PHÍ
                 </button>
              </div>
@@ -2284,9 +3361,9 @@
        </div>
     </section>
 
-    <section id="profileSection" class="hidden animate-fade-in">
+    <section id="profileSection" class="hidden ">
        <div class="mb-6">
-          <button onclick="window.goHome()" class="px-4 py-2 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-semibold hover:bg-gray-200 dark:hover:bg-gray-700 transition flex items-center gap-2">
+          <button onclick="window.goHome()" class="px-4 py-2 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-semibold hover:bg-gray-200 dark:hover:bg-gray-700 flex items-center gap-2">
              <i class="fas fa-arrow-left"></i>Trở về trang chủ
           </button>
        </div>
@@ -2302,7 +3379,7 @@
                 <div class="mb-4">
                    <img id="profileAvatarImg" src="https://api.dicebear.com/7.x/notionists/svg?seed=Felix" alt="avatar" class="w-24 h-24 rounded-full mx-auto border-4 border-gray-200 dark:border-gray-700 shadow-lg">
                 </div>
-                <button onclick="window.randomizeAvatar()" class="px-4 py-2 rounded-xl bg-blue-600 text-white font-bold text-sm hover:bg-blue-700 transition shadow-lg shadow-blue-500/20">
+                <button onclick="window.randomizeAvatar()" class="px-4 py-2 rounded-xl bg-blue-600 text-white font-bold text-sm hover:bg-blue-700 shadow-lg shadow-blue-500/20">
                    <i class="fas fa-shuffle mr-2"></i>Đổi avatar ngẫu nhiên
                 </button>
              </div>
@@ -2312,7 +3389,7 @@
                 <label class="block text-sm font-bold text-gray-400 uppercase tracking-wider mb-2">Tên hiển thị</label>
                 <div class="flex gap-2">
                    <input id="profileDisplayName" type="text" class="flex-1 fs-input px-4 py-3 rounded-xl" placeholder="Nhập tên hiển thị" />
-                   <button onclick="window.updateDisplayName()" class="px-6 py-3 rounded-xl bg-blue-600 text-white font-bold hover:bg-blue-700 transition shadow-lg shadow-blue-500/20">
+                   <button onclick="window.updateDisplayName()" class="px-6 py-3 rounded-xl bg-blue-600 text-white font-bold hover:bg-blue-700 shadow-lg shadow-blue-500/20">
                       <i class="fas fa-save mr-2"></i>Lưu
                    </button>
                 </div>
@@ -2331,7 +3408,7 @@
                 <div id="profileMembershipDisplay" class="mb-4">
                    <!-- Sẽ được cập nhật bởi loadProfileData -->
                 </div>
-                <button onclick="window.showMembershipModal()" class="w-full px-6 py-3 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold hover:from-purple-700 hover:to-pink-700 transition shadow-lg shadow-purple-500/20">
+                <button onclick="window.showMembershipModal()" class="w-full px-6 py-3 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold hover:from-purple-700 hover:to-pink-700 shadow-lg shadow-purple-500/20">
                    <i class="fas fa-crown mr-2"></i>Xem gói thành viên
                 </button>
              </div>
@@ -2352,7 +3429,7 @@
                       <label class="block text-sm font-bold text-gray-400 uppercase tracking-wider mb-2">Xác nhận mật khẩu mới</label>
                       <input id="profileConfirmPassword" type="password" class="w-full fs-input px-4 py-3 rounded-xl" placeholder="Nhập lại mật khẩu mới" />
                    </div>
-                   <button onclick="window.updatePassword()" class="w-full px-6 py-3 rounded-xl bg-green-600 text-white font-bold hover:bg-green-700 transition shadow-lg shadow-green-500/20">
+                   <button onclick="window.updatePassword()" class="w-full px-6 py-3 rounded-xl bg-green-600 text-white font-bold hover:bg-green-700 shadow-lg shadow-green-500/20">
                       <i class="fas fa-key mr-2"></i>Đổi mật khẩu
                    </button>
                 </div>
@@ -2361,32 +3438,39 @@
        </div>
     </section>
 
-    <section id="inputSection" class="hidden animate-fade-in">
-       <div class="grid lg:grid-cols-2 gap-8 h-[calc(100vh-140px)]">
+    <section id="inputSection" class="hidden ">
+       <!-- Step Indicator -->
+       <div class="mb-6 flex items-center justify-center gap-4">
+          <button id="step1Btn" class="px-6 py-3 rounded-xl bg-blue-600 text-white font-bold shadow-lg shadow-blue-500/30 flex items-center gap-2" onclick="window.switchToStep(1)">
+             <i class="fas fa-pen-to-square"></i>
+             <span>Bước 1: Nhập nội dung câu hỏi</span>
+          </button>
+          <button id="step2Btn" class="px-6 py-3 rounded-xl bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 font-bold flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed" onclick="window.switchToStep(2)">
+             <i class="fas fa-check-circle"></i>
+             <span>Bước 2: Chọn đáp án đúng</span>
+          </button>
+       </div>
+
+       <!-- Step 1: Input Questions -->
+       <div id="step1Content" class="grid lg:grid-cols-2 gap-8 h-[calc(100vh-200px)]">
           <div class="fs-card rounded-[2rem] p-6 flex flex-col h-full">
              <div class="flex items-center justify-between mb-4">
-                <h3 class="font-bold text-lg"><i class="fas fa-pen-to-square text-blue-500 mr-2"></i>Nhập dữ liệu</h3>
-                <button class="text-xs font-bold text-blue-600 bg-blue-50 px-3 py-1.5 rounded-lg hover:bg-blue-100" onclick="document.getElementById('rawContent').value='';document.getElementById('answerKeyRaw').value='';window.updatePreview()">Xóa trắng</button>
+                <h3 class="font-bold text-lg"><i class="fas fa-pen-to-square text-blue-500 mr-2"></i>Nhập nội dung câu hỏi</h3>
+                <button class="text-xs font-bold text-blue-600 bg-blue-50 px-3 py-1.5 rounded-lg hover:bg-blue-100" onclick="document.getElementById('rawContent').value='';window.updatePreview()">Xóa trắng</button>
              </div>
              
-             <div class="flex-1 flex flex-col gap-4 min-h-0">
-                <div class="flex-1 flex flex-col min-h-0">
-                   <label class="text-xs font-bold text-gray-400 uppercase mb-2">1. Nội dung câu hỏi</label>
-                   <textarea id="rawContent" class="flex-1 w-full fs-input p-4 rounded-xl resize-none text-sm font-mono leading-relaxed" placeholder="Câu 1: Thủ đô của Việt Nam là?&#10;A. Hà Nội&#10;B. Huế&#10;C. Đà Nẵng&#10;D. HCM..."></textarea>
-                </div>
-                <div class="h-24 shrink-0">
-                   <label class="text-xs font-bold text-gray-400 uppercase mb-2">2. Đáp án (Key)</label>
-                   <input id="answerKeyRaw" class="w-full fs-input p-4 rounded-xl text-sm font-mono tracking-widest uppercase" placeholder="ABCDACBD..." />
-                </div>
+             <div class="flex-1 flex flex-col min-h-0">
+                <label class="text-xs font-bold text-gray-400 uppercase mb-2">Dán nội dung câu hỏi và đáp án</label>
+                <textarea id="rawContent" class="flex-1 w-full fs-input p-4 rounded-xl resize-none text-sm font-mono leading-relaxed" placeholder="Câu 1: Thủ đô của Việt Nam là?&#10;A. Hà Nội&#10;B. Huế&#10;C. Đà Nẵng&#10;D. HCM..."></textarea>
+                <button class="mt-4 px-6 py-3 rounded-xl fs-btn-primary font-bold shadow-lg shadow-blue-500/30" onclick="window.goToStep2()">
+                   <i class="fas fa-arrow-right mr-2"></i>Tiếp theo: Chọn đáp án đúng
+                </button>
              </div>
           </div>
 
           <div class="fs-card rounded-[2rem] p-6 flex flex-col h-full bg-gray-50/50 dark:bg-gray-800/30">
              <div class="flex items-center justify-between mb-4">
                 <h3 class="font-bold text-lg">Xem trước <span id="previewCount" class="ml-2 px-2 py-0.5 bg-gray-200 dark:bg-gray-700 text-xs rounded-full">0 câu</span></h3>
-                <div class="flex gap-2">
-                   <button class="px-4 py-2 rounded-xl fs-btn-primary font-bold text-sm shadow-lg shadow-blue-500/30" onclick="window.openSaveModal()"><i class="fas fa-save mr-2"></i>Lưu bộ đề</button>
-                </div>
              </div>
              <div id="livePreviewContainer" class="flex-1 overflow-y-auto pr-2 space-y-3">
                 <div class="h-full flex flex-col items-center justify-center text-gray-400 opacity-60">
@@ -2396,9 +3480,52 @@
              </div>
           </div>
        </div>
+
+       <!-- Step 2: Select Answers -->
+       <div id="step2Content" class="hidden relative h-[calc(100vh-200px)]">
+          <div class="fs-card rounded-[2rem] p-6 flex flex-col h-full bg-gray-50/50 dark:bg-gray-800/30">
+             <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center gap-4">
+                   <button class="px-4 py-2 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-semibold hover:bg-gray-200 dark:hover:bg-gray-700" onclick="window.switchToStep(1)">
+                      <i class="fas fa-arrow-left mr-2"></i>Quay lại
+                   </button>
+                   <h3 class="font-bold text-lg">Click vào đáp án đúng <span id="answerPreviewCount" class="ml-2 px-2 py-0.5 bg-gray-200 dark:bg-gray-700 text-xs rounded-full">0 câu</span></h3>
+                </div>
+                <div class="flex items-center gap-2">
+                   <button class="px-4 py-2 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-semibold hover:bg-gray-200 dark:hover:bg-gray-700" onclick="window.toggleAnswerInput()">
+                      <i class="fas fa-keyboard mr-2"></i>Nhập chuỗi đáp án
+                   </button>
+                   <button class="px-6 py-3 rounded-xl fs-btn-primary font-bold shadow-lg shadow-blue-500/30" onclick="window.openSaveModal()">
+                      <i class="fas fa-save mr-2"></i>Lưu bộ đề
+                   </button>
+                </div>
+             </div>
+             
+             <div id="answerPreviewContainer" class="flex-1 overflow-y-auto pr-2 space-y-3">
+                <!-- Sẽ được cập nhật bởi updateAnswerPreview -->
+             </div>
+          </div>
+
+          <!-- Floating input container -->
+          <div id="floatingAnswerInput" class="hidden fixed bottom-6 left-1/2 transform -translate-x-1/2 z-[100] w-full max-w-2xl px-4">
+             <div class="bg-white dark:bg-gray-800 rounded-2xl border-2 border-gray-200 dark:border-gray-700 shadow-2xl p-4 relative">
+                <button onclick="window.toggleAnswerInput()" class="absolute top-3 right-3 w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 flex items-center justify-center text-gray-500 dark:text-gray-400">
+                   <i class="fas fa-times text-sm"></i>
+                </button>
+                <label class="block text-xs font-bold text-gray-400 uppercase mb-2">Nhập chuỗi đáp án (ví dụ: ABCD)</label>
+                <div class="flex gap-2">
+                   <input id="answerKeyRaw" class="flex-1 fs-input p-4 rounded-xl text-sm font-mono tracking-widest uppercase shadow-md" placeholder="ABCDACBD..." />
+                   <button class="px-6 py-3 rounded-xl fs-btn-primary font-bold shadow-lg shadow-blue-500/30 whitespace-nowrap" onclick="window.openSaveModal()">
+                      <i class="fas fa-save mr-2"></i>Lưu
+                   </button>
+                </div>
+                <p class="text-xs text-gray-400 mt-2">Hoặc click trực tiếp vào đáp án đúng ở trên</p>
+             </div>
+          </div>
+       </div>
     </section>
 
-    <section id="fileManagerSection" class="hidden animate-fade-in">
+    <section id="fileManagerSection" class="hidden ">
        <div class="fs-card rounded-[2rem] min-h-[500px] flex flex-col">
           <div class="p-6 border-b border-gray-100 dark:border-gray-800 flex flex-wrap gap-4 items-center justify-between">
              <div>
@@ -2410,11 +3537,12 @@
              
              <div class="flex items-center gap-2">
                 <div class="relative group">
-                   <input id="newFolderName" class="pl-3 pr-10 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-transparent text-sm w-40 focus:w-60 transition-all outline-none" placeholder="Tên thư mục..." />
+                   <input id="newFolderName" class="pl-3 pr-10 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-transparent text-sm w-40 focus:w-60-all outline-none" placeholder="Tên thư mục..." />
                    <button class="absolute right-2 top-1.5 text-gray-400 hover:text-blue-500" onclick="window.createFolder()"><i class="fas fa-plus"></i></button>
                 </div>
-                <button class="w-9 h-9 rounded-xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-700 transition" onclick="window.refreshFileList()"><i class="fas fa-rotate"></i></button>
-                <button class="px-4 py-2 rounded-xl bg-blue-600 text-white font-bold text-sm shadow-lg shadow-blue-500/20 hover:-translate-y-0.5 transition" onclick="window.startCreateNew()"><i class="fas fa-plus mr-1"></i> Tạo mới</button>
+                <button class="w-9 h-9 rounded-xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-700" onclick="window.refreshFileList()"><i class="fas fa-rotate"></i></button>
+                <button class="px-4 py-2 rounded-xl bg-green-600 text-white font-bold text-sm shadow-lg shadow-green-500/20 " onclick="window.openSharedSection()"><i class="fas fa-share-nodes mr-1"></i> Được chia sẻ</button>
+                <button class="px-4 py-2 rounded-xl bg-blue-600 text-white font-bold text-sm shadow-lg shadow-blue-500/20 " onclick="window.startCreateNew()"><i class="fas fa-plus mr-1"></i> Tạo mới</button>
              </div>
           </div>
 
@@ -2429,9 +3557,38 @@
        </div>
     </section>
 
-    <section id="quizRunnerSection" class="hidden animate-fade-in py-5">
+    <section id="sharedSection" class="hidden ">
+       <div class="fs-card rounded-[2rem] min-h-[500px] flex flex-col">
+          <div class="p-6 border-b border-gray-100 dark:border-gray-800 flex flex-wrap gap-4 items-center justify-between">
+             <div>
+                <h2 class="text-xl font-bold flex items-center gap-2">
+                   <i class="fas fa-share-nodes text-green-500"></i> Được chia sẻ với tôi
+                </h2>
+                <p class="text-xs text-gray-400 mt-1">Các file và thư mục được người khác chia sẻ</p>
+             </div>
+             
+             <div class="flex items-center gap-2">
+                <button class="px-4 py-2 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-semibold hover:bg-gray-200 dark:hover:bg-gray-700" onclick="window.openManageQuizzes()">
+                   <i class="fas fa-arrow-left mr-2"></i>Về thư viện
+                </button>
+                <button class="w-9 h-9 rounded-xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-700" onclick="window.refreshSharedList()"><i class="fas fa-rotate"></i></button>
+             </div>
+          </div>
+
+          <div class="flex-1 p-2 bg-gray-50/30 dark:bg-gray-900/10">
+             <div class="grid grid-cols-12 px-6 py-2 text-xs font-bold text-gray-400 uppercase tracking-wider">
+                <div class="col-span-6">Tên</div>
+                <div class="col-span-3">Người chia sẻ</div>
+                <div class="col-span-3 text-right">Tác vụ</div>
+             </div>
+             <div id="sharedListBody" class="space-y-1 mt-2"></div>
+          </div>
+       </div>
+    </section>
+
+    <section id="quizRunnerSection" class="hidden  py-5">
        <div class="flex justify-between items-center mb-6 px-4">
-          <button onclick="window.backToManager()" class="flex items-center text-gray-500 hover:text-gray-900 dark:hover:text-white font-medium transition">
+          <button onclick="window.backToManager()" class="flex items-center text-gray-500 hover:text-gray-900 dark:hover:text-white font-medium">
              <div class="w-8 h-8 rounded-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 flex items-center justify-center mr-2"><i class="fas fa-chevron-left text-xs"></i></div>
              Thoát
           </button>
@@ -2446,10 +3603,10 @@
   </main>
 
   <div id="saveQuizModal" class="hidden relative z-[100]" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-    <div class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity"></div>
+    <div class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm-opacity"></div>
     <div class="fixed inset-0 z-10 overflow-y-auto">
       <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
-        <div class="fs-modal-panel relative transform overflow-hidden rounded-[2rem] bg-white dark:bg-gray-800 text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-md border border-gray-100 dark:border-gray-700 scale-95 opacity-0 duration-200">
+        <div class="fs-modal-panel relative transform overflow-hidden rounded-[2rem] bg-white dark:bg-gray-800 text-left shadow-2xl-all sm:my-8 sm:w-full sm:max-w-md border border-gray-100 dark:border-gray-700 scale-95 opacity-0 duration-200">
            <div class="p-6">
               <div class="flex items-center justify-center w-12 h-12 rounded-full bg-blue-100 text-blue-600 mb-4 mx-auto text-xl"><i class="fas fa-cloud-arrow-up"></i></div>
               <h3 class="text-xl font-bold text-center mb-1">Lưu bộ đề</h3>
@@ -2479,7 +3636,7 @@
   <div id="quizSuccessModal" class="hidden relative z-[100]">
      <div class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm"></div>
      <div class="fixed inset-0 z-10 flex items-center justify-center p-4">
-        <div class="fs-modal-panel bg-white dark:bg-gray-800 rounded-[2rem] p-6 max-w-sm w-full text-center shadow-2xl scale-95 opacity-0 transition-all duration-200">
+        <div class="fs-modal-panel bg-white dark:bg-gray-800 rounded-[2rem] p-6 max-w-sm w-full text-center shadow-2xl scale-95 opacity-0-all duration-200">
            <div class="w-16 h-16 rounded-full bg-green-100 text-green-600 flex items-center justify-center text-3xl mx-auto mb-4"><i class="fas fa-check"></i></div>
            <h3 class="text-xl font-bold mb-2">Thành công!</h3>
            <p class="text-gray-500 mb-6">Bộ đề đã được lưu an toàn.</p>
@@ -2491,16 +3648,17 @@
   <div id="itemActionModal" class="hidden relative z-[100]">
      <div class="fixed inset-0 bg-gray-900/40 backdrop-blur-sm" onclick="window.closeModal('itemActionModal')"></div>
      <div class="fixed inset-0 z-10 flex items-center justify-center p-4 pointer-events-none">
-        <div class="fs-modal-panel pointer-events-auto bg-white dark:bg-gray-800 rounded-[2rem] p-5 max-w-xs w-full shadow-2xl scale-95 opacity-0 transition-all duration-200">
+        <div class="fs-modal-panel pointer-events-auto bg-white dark:bg-gray-800 rounded-[2rem] p-5 max-w-xs w-full shadow-2xl scale-95 opacity-0-all duration-200">
            <div class="text-center border-b border-gray-100 dark:border-gray-700 pb-3 mb-3">
               <div class="font-bold truncate px-4" id="itemActionName">Item Name</div>
               <div class="text-xs text-gray-400">Tùy chọn</div>
            </div>
            <div class="space-y-2">
-              <button class="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition text-left" onclick="window.openRenameModal()"><i class="fas fa-pen text-blue-500 w-5"></i> Đổi tên</button>
-              <button class="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition text-left" onclick="window.openMoveModal()"><i class="fas fa-folder-tree text-orange-500 w-5"></i> Di chuyển</button>
-              <button class="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition text-left" onclick="window.openColorModal()"><i class="fas fa-palette text-purple-500 w-5"></i> Đổi màu</button>
-              <button class="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600 transition text-left font-semibold" onclick="window.triggerDelete()"><i class="fas fa-trash w-5"></i> Xóa vĩnh viễn</button>
+              <button class="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 text-left" onclick="window.openRenameModal()"><i class="fas fa-pen text-blue-500 w-5"></i> Đổi tên</button>
+              <button class="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 text-left" onclick="window.openShareModal()"><i class="fas fa-share-nodes text-green-500 w-5"></i> Chia sẻ</button>
+              <button class="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 text-left" onclick="window.openMoveModal()"><i class="fas fa-folder-tree text-orange-500 w-5"></i> Di chuyển</button>
+              <button class="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 text-left" onclick="window.openColorModal()"><i class="fas fa-palette text-purple-500 w-5"></i> Đổi màu</button>
+              <button class="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600 text-left font-semibold" onclick="window.triggerDelete()"><i class="fas fa-trash w-5"></i> Xóa vĩnh viễn</button>
            </div>
            <button class="w-full mt-4 py-2 text-gray-400 text-sm hover:text-gray-600" onclick="window.closeModal('itemActionModal')">Đóng</button>
         </div>
@@ -2510,7 +3668,7 @@
   <div id="renameModal" class="hidden relative z-[100]">
     <div class="fixed inset-0 bg-black/50 backdrop-blur-sm"></div>
     <div class="fixed inset-0 z-10 flex items-center justify-center p-4">
-      <div class="fs-modal-panel bg-white dark:bg-gray-800 p-6 rounded-3xl w-full max-w-sm shadow-2xl scale-95 opacity-0 transition-all">
+      <div class="fs-modal-panel bg-white dark:bg-gray-800 p-6 rounded-3xl w-full max-w-sm shadow-2xl scale-95 opacity-0-all">
          <h3 class="font-bold text-lg mb-4">Đổi tên</h3>
          <input id="renameInput" class="w-full fs-input px-4 py-3 rounded-xl mb-4" />
          <div class="flex gap-2 justify-end">
@@ -2524,7 +3682,7 @@
   <div id="moveFileModal" class="hidden relative z-[100]">
     <div class="fixed inset-0 bg-black/50 backdrop-blur-sm"></div>
     <div class="fixed inset-0 z-10 flex items-center justify-center p-4">
-      <div class="fs-modal-panel bg-white dark:bg-gray-800 p-6 rounded-3xl w-full max-w-sm shadow-2xl scale-95 opacity-0 transition-all">
+      <div class="fs-modal-panel bg-white dark:bg-gray-800 p-6 rounded-3xl w-full max-w-sm shadow-2xl scale-95 opacity-0-all">
          <h3 class="font-bold text-lg mb-4">Di chuyển đến</h3>
          <select id="moveTargetSelect" class="w-full fs-input px-4 py-3 rounded-xl mb-6"></select>
          <div class="flex gap-2 justify-end">
@@ -2538,29 +3696,75 @@
   <div id="colorModal" class="hidden relative z-[100]">
     <div class="fixed inset-0 bg-black/50 backdrop-blur-sm"></div>
     <div class="fixed inset-0 z-10 flex items-center justify-center p-4">
-      <div class="fs-modal-panel bg-white dark:bg-gray-800 p-6 rounded-3xl w-full max-w-sm shadow-2xl scale-95 opacity-0 transition-all text-center">
+      <div class="fs-modal-panel bg-white dark:bg-gray-800 p-6 rounded-3xl w-full max-w-sm shadow-2xl scale-95 opacity-0-all text-center">
          <h3 class="font-bold text-lg mb-6">Chọn màu thư mục</h3>
          <div class="flex justify-center gap-4 mb-6">
-            <button onclick="window.confirmColorChange('text-yellow-400')" class="w-10 h-10 rounded-full bg-yellow-100 text-yellow-500 flex items-center justify-center hover:scale-110 transition border-2 border-yellow-200"><i class="fas fa-folder"></i></button>
-            <button onclick="window.confirmColorChange('text-blue-500')" class="w-10 h-10 rounded-full bg-blue-100 text-blue-500 flex items-center justify-center hover:scale-110 transition border-2 border-blue-200"><i class="fas fa-folder"></i></button>
-            <button onclick="window.confirmColorChange('text-red-500')" class="w-10 h-10 rounded-full bg-red-100 text-red-500 flex items-center justify-center hover:scale-110 transition border-2 border-red-200"><i class="fas fa-folder"></i></button>
-            <button onclick="window.confirmColorChange('text-green-500')" class="w-10 h-10 rounded-full bg-green-100 text-green-500 flex items-center justify-center hover:scale-110 transition border-2 border-green-200"><i class="fas fa-folder"></i></button>
-            <button onclick="window.confirmColorChange('text-purple-500')" class="w-10 h-10 rounded-full bg-purple-100 text-purple-500 flex items-center justify-center hover:scale-110 transition border-2 border-purple-200"><i class="fas fa-folder"></i></button>
+            <button onclick="window.confirmColorChange('text-yellow-400')" class="w-10 h-10 rounded-full bg-yellow-100 text-yellow-500 flex items-center justify-center  border-2 border-yellow-200"><i class="fas fa-folder"></i></button>
+            <button onclick="window.confirmColorChange('text-blue-500')" class="w-10 h-10 rounded-full bg-blue-100 text-blue-500 flex items-center justify-center  border-2 border-blue-200"><i class="fas fa-folder"></i></button>
+            <button onclick="window.confirmColorChange('text-red-500')" class="w-10 h-10 rounded-full bg-red-100 text-red-500 flex items-center justify-center  border-2 border-red-200"><i class="fas fa-folder"></i></button>
+            <button onclick="window.confirmColorChange('text-green-500')" class="w-10 h-10 rounded-full bg-green-100 text-green-500 flex items-center justify-center  border-2 border-green-200"><i class="fas fa-folder"></i></button>
+            <button onclick="window.confirmColorChange('text-purple-500')" class="w-10 h-10 rounded-full bg-purple-100 text-purple-500 flex items-center justify-center  border-2 border-purple-200"><i class="fas fa-folder"></i></button>
          </div>
          <button class="text-gray-400 text-sm hover:text-gray-600" onclick="window.closeModal('colorModal')">Đóng</button>
       </div>
     </div>
   </div>
 
+  <div id="shareModal" class="hidden relative z-[100]">
+    <div class="fixed inset-0 bg-black/50 backdrop-blur-sm"></div>
+    <div class="fixed inset-0 z-10 flex items-center justify-center p-4">
+      <div class="fs-modal-panel bg-white dark:bg-gray-800 p-6 rounded-3xl w-full max-w-md shadow-2xl scale-95 opacity-0-all">
+         <div class="flex items-center justify-between mb-4">
+            <h3 class="font-bold text-lg">Chia sẻ <span id="shareItemName" class="text-blue-600"></span></h3>
+            <button onclick="window.closeModal('shareModal')" class="w-8 h-8 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center justify-center">
+               <i class="fas fa-times text-gray-400"></i>
+            </button>
+         </div>
+         
+         <div class="space-y-4 mb-6">
+            <div>
+               <label class="block text-xs font-bold text-gray-400 uppercase mb-2">Chia sẻ với email</label>
+               <div class="flex gap-2">
+                  <input id="shareEmailInput" type="email" class="flex-1 fs-input px-4 py-3 rounded-xl" placeholder="email@example.com" />
+                  <button onclick="window.shareWithEmail()" class="px-4 py-3 rounded-xl bg-blue-600 text-white font-bold hover:bg-blue-700">
+                     <i class="fas fa-paper-plane"></i>
+                  </button>
+               </div>
+            </div>
+            
+            <div class="border-t border-gray-200 dark:border-gray-700 pt-4">
+               <label class="block text-xs font-bold text-gray-400 uppercase mb-2">Hoặc tạo link chia sẻ</label>
+               <div class="flex gap-2">
+                  <input id="shareLinkInput" type="text" readonly class="flex-1 fs-input px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900/50" />
+                  <button onclick="window.copyShareLink()" class="px-4 py-3 rounded-xl bg-green-600 text-white font-bold hover:bg-green-700" id="copyLinkBtn">
+                     <i class="fas fa-copy"></i>
+                  </button>
+               </div>
+               <button onclick="window.generateShareLink()" class="mt-2 w-full px-4 py-2 rounded-xl bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-semibold hover:bg-gray-200 dark:hover:bg-gray-600">
+                  <i class="fas fa-link mr-2"></i>Tạo link chia sẻ
+               </button>
+            </div>
+         </div>
+         
+         <div class="border-t border-gray-200 dark:border-gray-700 pt-4">
+            <h4 class="text-sm font-bold mb-2">Người đã được chia sẻ:</h4>
+            <div id="sharedWithList" class="space-y-2 max-h-32 overflow-y-auto">
+               <p class="text-xs text-gray-400 text-center py-2">Chưa có ai được chia sẻ</p>
+            </div>
+         </div>
+      </div>
+    </div>
+  </div>
+
   <div id="membershipModal" class="hidden relative z-[100]" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-    <div class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity" onclick="window.closeModal('membershipModal')"></div>
+    <div class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm-opacity" onclick="window.closeModal('membershipModal')"></div>
     <div class="fixed inset-0 z-10 overflow-y-auto">
       <div class="flex min-h-full items-center justify-center p-4">
-        <div class="fs-modal-panel relative transform overflow-hidden rounded-[2rem] bg-white dark:bg-gray-800 text-left shadow-2xl transition-all w-full max-w-4xl scale-95 opacity-0 duration-200" onclick="event.stopPropagation()">
+        <div class="fs-modal-panel relative transform overflow-hidden rounded-[2rem] bg-white dark:bg-gray-800 text-left shadow-2xl-all w-full max-w-4xl scale-95 opacity-0 duration-200" onclick="event.stopPropagation()">
           <div class="p-8">
             <div class="flex items-center justify-between mb-6">
               <h3 class="text-2xl font-bold text-gray-900 dark:text-white">Gói thành viên</h3>
-              <button onclick="window.closeModal('membershipModal')" class="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-600 transition">
+              <button onclick="window.closeModal('membershipModal')" class="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-600">
                 <i class="fas fa-times"></i>
               </button>
             </div>
@@ -2587,7 +3791,7 @@
                     <span>Lưu trữ đám mây</span>
                   </li>
                 </ul>
-                <button class="w-full py-3 rounded-xl bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-bold hover:bg-gray-200 dark:hover:bg-gray-600 transition" disabled>
+                <button class="w-full py-3 rounded-xl bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-bold hover:bg-gray-200 dark:hover:bg-gray-600" disabled>
                   Gói hiện tại
                 </button>
               </div>
@@ -2625,7 +3829,7 @@
                     <span>Badge PRO độc quyền</span>
                   </li>
                 </ul>
-                <button id="upgradeToProBtn" onclick="window.upgradeToPro()" class="w-full py-3 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold hover:from-purple-700 hover:to-pink-700 transition shadow-lg shadow-purple-500/20">
+                <button id="upgradeToProBtn" onclick="window.upgradeToPro()" class="w-full py-3 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold hover:from-purple-700 hover:to-pink-700 shadow-lg shadow-purple-500/20">
                   <i class="fas fa-crown mr-2"></i>Sử dụng ngay
                 </button>
               </div>
