@@ -283,6 +283,53 @@
       background-clip: text;
     }
 
+    /* Drag and Drop Effects */
+    .drag-over-folder {
+      background: rgba(59, 130, 246, 0.15) !important;
+      border: 2px dashed #3b82f6 !important;
+      border-radius: 0.75rem !important;
+      transform: scale(1.02) !important;
+      box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2) !important;
+      transition: all 0.2s ease !important;
+    }
+    html.dark .drag-over-folder {
+      background: rgba(59, 130, 246, 0.25) !important;
+      border-color: #60a5fa !important;
+      box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.3) !important;
+    }
+    
+    .dragging-item {
+      opacity: 0.5 !important;
+      transform: scale(0.95) !important;
+      transition: all 0.2s ease !important;
+    }
+
+    /* Multi-select styles */
+    .multi-select-item {
+      transition: all 0.2s ease;
+    }
+    
+    .multi-select-item.selected {
+      background: rgba(59, 130, 246, 0.1) !important;
+      border-left: 4px solid #3b82f6 !important;
+    }
+    html.dark .multi-select-item.selected {
+      background: rgba(59, 130, 246, 0.2) !important;
+    }
+
+    .multi-select-actions {
+      position: sticky;
+      bottom: 0;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-top: 2px solid rgba(59, 130, 246, 0.2);
+      z-index: 10;
+    }
+    html.dark .multi-select-actions {
+      background: rgba(15, 23, 42, 0.95);
+      border-top-color: rgba(59, 130, 246, 0.3);
+    }
+
     /* ==========================================
        DESKTOP OPTIMIZATION - Compact Design
        ========================================== */
@@ -739,6 +786,8 @@
     window.runningQuiz = null;
     window.currentSort = { field: 'date', order: 'desc' };
     window.isRegisterMode = false;
+    window.selectedItems = new Set(); // Set of item IDs for multi-select
+    window.multiSelectMode = false; // Toggle for multi-select mode
 
     window.getFriendlyErrorMessage = (code) => {
       const map = {
@@ -835,8 +884,189 @@
       if (window.updateCurrentFolderName) window.updateCurrentFolderName();
     };
 
+    // --- MULTI-SELECT FUNCTIONS ---
+    window.toggleMultiSelectMode = function () {
+      window.multiSelectMode = !window.multiSelectMode;
+      if (!window.multiSelectMode) {
+        window.selectedItems.clear();
+      }
+      window.updateFileListHeader();
+      window.updateMultiSelectUI();
+      // Re-render table to show/hide checkboxes
+      if (window.refreshFileList) {
+        setTimeout(() => window.refreshFileList(), 100);
+      }
+    };
+
+    window.toggleItemSelection = function (itemId, itemType) {
+      const key = `${itemType}-${itemId}`;
+      if (window.selectedItems.has(key)) {
+        window.selectedItems.delete(key);
+      } else {
+        window.selectedItems.add(key);
+      }
+      window.updateMultiSelectUI();
+      // Update visual state
+      const itemEl = document.querySelector(`[data-item-id="${key}"]`);
+      if (itemEl) {
+        if (window.selectedItems.has(key)) {
+          itemEl.classList.add('selected');
+        } else {
+          itemEl.classList.remove('selected');
+        }
+      }
+    };
+
+    window.selectAllItems = function () {
+      const items = document.querySelectorAll('[data-item-id]');
+      items.forEach(item => {
+        const itemId = item.getAttribute('data-item-id');
+        if (itemId) {
+          window.selectedItems.add(itemId);
+          item.classList.add('selected');
+        }
+      });
+      window.updateMultiSelectUI();
+    };
+
+    window.deselectAllItems = function () {
+      window.selectedItems.clear();
+      const items = document.querySelectorAll('[data-item-id]');
+      items.forEach(item => {
+        item.classList.remove('selected');
+      });
+      window.updateMultiSelectUI();
+    };
+
+    window.updateMultiSelectUI = function () {
+      const count = window.selectedItems.size;
+      const multiSelectBar = document.getElementById('multiSelectActionsBar');
+      const toggleBtn = document.getElementById('toggleMultiSelectBtn');
+      
+      if (multiSelectBar) {
+        if (window.multiSelectMode && count > 0) {
+          multiSelectBar.classList.remove('hidden');
+          const countEl = document.getElementById('selectedCount');
+          if (countEl) countEl.textContent = count;
+        } else {
+          multiSelectBar.classList.add('hidden');
+        }
+      }
+      
+      if (toggleBtn) {
+        if (window.multiSelectMode) {
+          toggleBtn.classList.add('bg-blue-600', 'text-white');
+          toggleBtn.classList.remove('bg-gray-100', 'dark:bg-gray-800', 'text-gray-700', 'dark:text-gray-300');
+        } else {
+          toggleBtn.classList.remove('bg-blue-600', 'text-white');
+          toggleBtn.classList.add('bg-gray-100', 'dark:bg-gray-800', 'text-gray-700', 'dark:text-gray-300');
+        }
+      }
+    };
+
+    window.deleteSelectedItems = async function () {
+      if (!window.currentUser || window.selectedItems.size === 0) return;
+      
+      const count = window.selectedItems.size;
+      if (!confirm(`Bạn có chắc muốn xóa ${count} mục đã chọn?`)) return;
+      
+      window.safeClassList('loadingOverlay', 'remove', 'hidden');
+      try {
+        const itemsToDelete = Array.from(window.selectedItems);
+        for (const key of itemsToDelete) {
+          const [type, id] = key.split('-');
+          const col = type === 'folder' ? 'folders' : 'quizzes';
+          await window.firebaseDeleteDoc(window.firebaseDoc(window.db, 'artifacts', window.appId, 'users', window.currentUser.uid, col, id));
+        }
+        window.selectedItems.clear();
+        window.updateMultiSelectUI();
+        await window.refreshFileList();
+        window.showToast(`Đã xóa ${count} mục thành công!`);
+      } catch (e) {
+        console.error('Error deleting items:', e);
+        alert('Lỗi xóa: ' + (e.message || 'Không thể xóa'));
+      } finally {
+        window.safeClassList('loadingOverlay', 'add', 'hidden');
+      }
+    };
+
+    window.moveSelectedItems = function () {
+      if (!window.currentUser || window.selectedItems.size === 0) return;
+      window.openMoveModalForSelected();
+    };
+
+    window.openMoveModalForSelected = function () {
+      if (window.selectedItems.size === 0) return;
+      const sel = document.getElementById('moveTargetSelectMulti');
+      const countEl = document.getElementById('moveSelectedCount');
+      if (!sel) return;
+      
+      if (countEl) countEl.textContent = window.selectedItems.size;
+      
+      sel.innerHTML = '<option value="root">📁 Gốc (Home)</option>';
+      (window.allFolders || []).forEach((f) => {
+        // Check if folder is in selected items
+        const folderKey = `folder-${f.id}`;
+        if (window.selectedItems.has(folderKey)) return; // Can't move folder into itself
+        const o = document.createElement('option');
+        o.value = f.id;
+        o.text = `📂 ${f.name}`;
+        sel.appendChild(o);
+      });
+      sel.value = 'root';
+      window.showModal('moveSelectedModal');
+    };
+
+    window.confirmMoveSelected = async function () {
+      if (!window.currentUser || window.selectedItems.size === 0) return;
+      const sel = document.getElementById('moveTargetSelectMulti');
+      const target = (sel?.value === 'root') ? null : sel.value;
+      window.closeModal('moveSelectedModal');
+      window.safeClassList('loadingOverlay', 'remove', 'hidden');
+      try {
+        const itemsToMove = Array.from(window.selectedItems);
+        for (const key of itemsToMove) {
+          const [type, id] = key.split('-');
+          const col = type === 'folder' ? 'folders' : 'quizzes';
+          const updateData = type === 'folder' ? { parentId: target } : { folderId: target };
+          await window.firebaseUpdateDoc(window.firebaseDoc(window.db, 'artifacts', window.appId, 'users', window.currentUser.uid, col, id), updateData);
+        }
+        window.selectedItems.clear();
+        window.updateMultiSelectUI();
+        await window.refreshFileList();
+        window.showToast(`Đã di chuyển ${itemsToMove.length} mục thành công!`);
+      } catch (e) {
+        console.error('Error moving items:', e);
+        alert('Lỗi di chuyển: ' + (e.message || 'Không thể di chuyển'));
+      } finally {
+        window.safeClassList('loadingOverlay', 'add', 'hidden');
+      }
+    };
+
     // --- RENDER FUNCTIONS (STYLED) ---
+    window.updateFileListHeader = function () {
+      const header = document.getElementById('fileListHeader');
+      if (!header) return;
+      
+      if (window.multiSelectMode) {
+        header.innerHTML = `
+          <div class="col-span-1"></div>
+          <div class="col-span-6">Tên</div>
+          <div class="col-span-2">Ngày tạo</div>
+          <div class="col-span-3 text-right">Tác vụ</div>
+        `;
+      } else {
+        header.innerHTML = `
+          <div class="col-span-7">Tên</div>
+          <div class="col-span-3">Ngày tạo</div>
+          <div class="col-span-2 text-right">Tác vụ</div>
+        `;
+      }
+    };
+
     window.renderTable = function (folders, quizzes) {
+      window.updateFileListHeader();
+      
       const listIds = ['fileListBody'];
       const backRowHTML = window.currentFolderId !== null
         ? `<div class="grid grid-cols-12 gap-2 px-4 py-3 border-b border-gray-100 dark:border-gray-700/50 items-center font-medium text-gray-500 hover:text-blue-500 hover:bg-gray-50 dark:hover:bg-gray-800/30 cursor-pointer" onclick="window.navigateUp()">
@@ -868,22 +1098,46 @@
 
           const sizeText = item.type === 'folder' ? '' : `<span class="bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded text-[10px] font-bold text-gray-600 dark:text-gray-300">${item.count || 0} câu</span>`;
 
-          const dragStart = `event.dataTransfer.setData('text/plain', JSON.stringify({id: '${item.id}', type: '${item.type}'}))`;
-          const dragOver = item.type === 'folder' ? 'event.preventDefault()' : '';
+          const itemKey = `${item.type}-${item.id}`;
+          const isSelected = window.selectedItems.has(itemKey);
+          const checkboxHTML = window.multiSelectMode 
+            ? `<div class="col-span-1 flex items-center">
+                 <input type="checkbox" class="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer" 
+                        ${isSelected ? 'checked' : ''} 
+                        onclick="event.stopPropagation(); window.toggleItemSelection('${item.id}', '${item.type}')" />
+               </div>`
+            : '';
+          
+          const dragStart = `event.dataTransfer.setData('text/plain', JSON.stringify({id: '${item.id}', type: '${item.type}'})); event.currentTarget.classList.add('dragging-item');`;
+          const dragEnd = `event.currentTarget.classList.remove('dragging-item');`;
+          const dragOver = item.type === 'folder' ? `window.handleDragOver(event, true)` : '';
+          const dragEnter = item.type === 'folder' ? `window.handleDragEnter(event, true)` : '';
+          const dragLeave = item.type === 'folder' ? `window.handleDragLeave(event, true)` : '';
           const drop = item.type === 'folder' ? `event.preventDefault(); window.handleDropOnFolder(event, '${item.id}')` : '';
-          const clickAction = item.type === 'folder'
-            ? `window.navigateToFolder('${item.id}', '${(item.name || '').replace(/'/g, "\\'")}')`
-            : `window.startQuizRunnerFromList('${item.id}')`;
+          
+          // Click action: in multi-select mode, toggle selection; otherwise, normal action
+          const clickAction = window.multiSelectMode
+            ? `if (!event.target.closest('button') && !event.target.closest('input[type="checkbox"]')) { window.toggleItemSelection('${item.id}', '${item.type}'); }`
+            : item.type === 'folder'
+              ? `window.navigateToFolder('${item.id}', '${(item.name || '').replace(/'/g, "\\'")}')`
+              : `window.startQuizRunnerFromList('${item.id}')`;
+          
+          const selectedClass = isSelected ? 'selected multi-select-item' : 'multi-select-item';
+          const colSpanName = window.multiSelectMode ? 'col-span-6' : 'col-span-7 md:col-span-7';
+          const colSpanDate = window.multiSelectMode ? 'col-span-2' : 'col-span-3 md:col-span-3';
+          const colSpanActions = window.multiSelectMode ? 'col-span-3' : 'col-span-2 md:col-span-2';
 
           contentHTML += `
-            <div class="grid grid-cols-12 gap-2 px-4 py-3 border-b border-gray-100 dark:border-gray-700/50 items-center group hover:bg-white dark:hover:bg-gray-800/80 cursor-pointer rounded-lg mx-2 my-1"
-                 draggable="true" ondragstart="${dragStart}" ondragover="${dragOver}" ondrop="${drop}" onclick="${clickAction}">
-              <div class="col-span-7 md:col-span-7 flex items-center truncate">
+            <div class="grid grid-cols-12 gap-2 px-4 py-3 border-b border-gray-100 dark:border-gray-700/50 items-center group hover:bg-white dark:hover:bg-gray-800/80 cursor-pointer rounded-lg mx-2 my-1 transition-all duration-200 ${selectedClass}"
+                 data-item-id="${itemKey}"
+                 draggable="${!window.multiSelectMode}" ondragstart="${!window.multiSelectMode ? dragStart : ''}" ondragend="${!window.multiSelectMode ? dragEnd : ''}" ondragenter="${!window.multiSelectMode && item.type === 'folder' ? dragEnter : ''}" ondragover="${!window.multiSelectMode && item.type === 'folder' ? dragOver : ''}" ondragleave="${!window.multiSelectMode && item.type === 'folder' ? dragLeave : ''}" ondrop="${!window.multiSelectMode && item.type === 'folder' ? drop : ''}" onclick="${clickAction}">
+              ${checkboxHTML}
+              <div class="${colSpanName} flex items-center truncate">
                 ${iconHTML}
                 <span class="truncate font-semibold text-gray-700 dark:text-gray-200 group-hover:text-blue-600 dark:group-hover:text-blue-400">${item.name}</span>
               </div>
-              <div class="col-span-3 md:col-span-3 text-xs text-gray-400">${item.date || ''}</div>
-              <div class="col-span-2 md:col-span-2 flex items-center justify-end gap-3">
+              <div class="${colSpanDate} text-xs text-gray-400">${item.date || ''}</div>
+              <div class="${colSpanActions} flex items-center justify-end gap-3">
                  ${sizeText}
                  <button class="w-8 h-8 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center justify-center text-gray-400" 
                          onclick="event.stopPropagation(); window.showContextMenu(event, '${item.id}', '${item.type}', '${(item.name || '').replace(/'/g, "\\'")}')">
@@ -1343,8 +1597,40 @@
     };
 
     // --- Drag & Drop ---
+    window.handleDragEnter = function (event, isFolder) {
+      if (!isFolder) return;
+      event.preventDefault();
+      const target = event.currentTarget;
+      if (!target.classList.contains('drag-over-folder')) {
+        target.classList.add('drag-over-folder');
+      }
+    };
+
+    window.handleDragOver = function (event, isFolder) {
+      if (!isFolder) return;
+      event.preventDefault();
+      const target = event.currentTarget;
+      if (!target.classList.contains('drag-over-folder')) {
+        target.classList.add('drag-over-folder');
+      }
+    };
+
+    window.handleDragLeave = function (event, isFolder) {
+      if (!isFolder) return;
+      // Chỉ remove class nếu thực sự rời khỏi element (không phải di chuyển vào child element)
+      const rect = event.currentTarget.getBoundingClientRect();
+      const x = event.clientX;
+      const y = event.clientY;
+      if (x < rect.left || x > rect.right || y < rect.top || y > rect.bottom) {
+        event.currentTarget.classList.remove('drag-over-folder');
+      }
+    };
+
     window.handleDropOnFolder = async function (event, folderId) {
       try {
+        // Remove drag-over class
+        event.currentTarget.classList.remove('drag-over-folder');
+        
         const raw = event.dataTransfer.getData('text/plain');
         if (!raw) return;
         const data = JSON.parse(raw);
@@ -1397,24 +1683,19 @@
             <p class="text-gray-500">Bộ đề này có tổng cộng <span class="font-bold text-blue-600">${total}</span> câu hỏi.</p>
           </div>
 
-          <div class="grid sm:grid-cols-3 gap-4">
-            <button class="group p-6 rounded-3xl bg-gradient-to-br from-blue-600 to-indigo-600 text-white text-left shadow-lg shadow-blue-500/30 cursor-pointer" onclick="window.startRunner('practice')">
-              <div class="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center mb-4 text-2xl shrink-0">⚡</div>
-              <div class="text-lg font-bold mb-2">Luyện tập</div>
-              <div class="text-blue-100 text-sm opacity-90 leading-relaxed">Làm từng câu, kiểm tra đáp án ngay lập tức. Phù hợp để ôn bài.</div>
+          <div class="flex flex-wrap justify-center gap-4">
+            <button class="fs-card p-6 rounded-[2rem] text-center cursor-pointer border-none bg-gradient-to-br from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-500/30 w-[280px] h-[280px] flex flex-col items-center justify-center transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-blue-500/50" onclick="window.startRunner('practice')">
+              <div class="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center text-3xl mb-4 transition-transform duration-300 hover:scale-110">⚡</div>
+              <h3 class="text-xl font-bold mb-3">Luyện tập</h3>
+              <p class="text-blue-100 text-sm leading-relaxed opacity-90">Làm từng câu, kiểm tra đáp án ngay lập tức. Phù hợp để ôn bài.</p>
             </button>
 
-            <button class="group p-6 rounded-3xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-left shadow-sm cursor-pointer" onclick="window.startRunner('exam')">
-              <div class="w-12 h-12 rounded-2xl bg-gray-100 dark:bg-gray-700 flex items-center justify-center mb-4 text-2xl shrink-0">📝</div>
-              <div class="text-lg font-bold mb-2 dark:text-white">Thi thử</div>
-              <div class="text-gray-500 dark:text-gray-400 text-sm leading-relaxed">Làm hết một lượt rồi nộp bài. Mô phỏng phòng thi thực tế.</div>
-            </button>
-
-            <button class="group p-6 rounded-3xl bg-gradient-to-br from-purple-600 to-pink-600 text-white text-left shadow-lg shadow-purple-500/30 opacity-75 grayscale cursor-not-allowed relative" disabled>
-              <div class="absolute top-4 right-4 px-3 py-1.5 bg-white/20 backdrop-blur-sm rounded-full text-xs font-bold text-white">Coming Soon</div>
-              <div class="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center mb-4 text-2xl shrink-0">🎮</div>
-              <div class="text-lg font-bold mb-2">Game Mode</div>
-              <div class="text-purple-100 text-sm opacity-90 leading-relaxed">Trả lời nhanh, tích điểm, tạo streak! Thử thách bản thân với timer.</div>
+            <button class="fs-card p-6 rounded-[2rem] text-center cursor-pointer w-[280px] h-[280px] flex flex-col items-center justify-center transition-all duration-300 hover:scale-105 hover:shadow-xl hover:border-blue-300 dark:hover:border-blue-600" onclick="window.startRunner('exam')">
+              <div class="w-16 h-16 rounded-2xl bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center text-3xl mb-4 transition-transform duration-300 hover:scale-110">
+                <i class="fas fa-file-alt"></i>
+              </div>
+              <h3 class="text-xl font-bold mb-3">Thi thử</h3>
+              <p class="text-gray-500 dark:text-gray-400 text-sm leading-relaxed">Làm hết một lượt rồi nộp bài. Mô phỏng phòng thi thực tế.</p>
             </button>
           </div>
         </div>
@@ -1442,9 +1723,9 @@
             const text = q.options[key];
             const isPicked = picked === key;
             
-            let baseStyle = "w-full text-left p-2 rounded-lg border-2 flex items-start gap-2 ";
-            let stateStyle = "border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800";
-            let icon = `<div class="w-5 h-5 rounded-full border border-gray-300 dark:border-gray-600 flex items-center justify-center text-xs font-bold text-gray-500">${key}</div>`;
+        let baseStyle = "w-full text-left p-2 rounded-lg border-2 flex items-start gap-2 ";
+        let stateStyle = "border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-blue-300 dark:hover:border-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/10 transition-colors";
+        let icon = `<div class="w-5 h-5 rounded-full border border-gray-300 dark:border-gray-600 flex items-center justify-center text-xs font-bold text-gray-500">${key}</div>`;
             
             if (isPicked) {
               stateStyle = "border-blue-500 bg-blue-50 dark:bg-blue-900/20";
@@ -1525,7 +1806,7 @@
           const isPicked = picked === key;
           
           let baseStyle = "w-full text-left p-2 rounded-lg border-2 flex items-start gap-2 ";
-          let stateStyle = "border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800";
+          let stateStyle = "border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-blue-300 dark:hover:border-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/10 transition-colors";
           let icon = `<div class="w-5 h-5 rounded-full border border-gray-300 dark:border-gray-600 flex items-center justify-center text-xs font-bold text-gray-500">${key}</div>`;
 
           if (isPicked) {
@@ -1605,20 +1886,23 @@
         let stateStyle = "border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800";
         let icon = `<div class="w-5 h-5 rounded-full border border-gray-300 dark:border-gray-600 flex items-center justify-center text-xs font-bold text-gray-500">${key}</div>`;
 
-        if (isPicked) {
-            stateStyle = "border-blue-500 bg-blue-50 dark:bg-blue-900/20";
-            icon = `<div class="w-5 h-5 rounded-full bg-blue-500 border border-blue-500 flex items-center justify-center text-xs font-bold text-white">${key}</div>`;
-        }
-        if (showAnswerNow && isCorrect) {
-            stateStyle = "border-green-500 bg-green-50 dark:bg-green-900/20";
-            icon = `<div class="w-5 h-5 rounded-full bg-green-500 border border-green-500 flex items-center justify-center text-xs font-bold text-white"><i class="fas fa-check"></i></div>`;
-        }
+        const isDisabled = s.submitted || (s.mode === 'practice' && isChecked);
+        
+        // Ưu tiên kiểm tra sai trước, sau đó mới đến đúng và chọn
         if (isWrongPicked) {
             stateStyle = "border-red-500 bg-red-50 dark:bg-red-900/20";
             icon = `<div class="w-5 h-5 rounded-full bg-red-500 border border-red-500 flex items-center justify-center text-xs font-bold text-white"><i class="fas fa-xmark"></i></div>`;
+        } else if (showAnswerNow && isCorrect) {
+            stateStyle = "border-green-500 bg-green-50 dark:bg-green-900/20";
+            icon = `<div class="w-5 h-5 rounded-full bg-green-500 border border-green-500 flex items-center justify-center text-xs font-bold text-white"><i class="fas fa-check"></i></div>`;
+        } else if (isPicked) {
+            stateStyle = "border-blue-500 bg-blue-50 dark:bg-blue-900/20";
+            icon = `<div class="w-5 h-5 rounded-full bg-blue-500 border border-blue-500 flex items-center justify-center text-xs font-bold text-white">${key}</div>`;
+        } else if (!isDisabled) {
+            // Thêm hover effect chỉ khi không disabled và chưa được chọn/đúng/sai
+            stateStyle += " hover:border-blue-300 dark:hover:border-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/10 transition-colors";
         }
-
-        const isDisabled = s.submitted || (s.mode === 'practice' && isChecked);
+        
         return `<button class="${baseStyle} ${stateStyle}" onclick="window.pickOption('${key}')" ${isDisabled ? 'disabled' : ''}>
            <div class="shrink-0">${icon}</div>
            <div class="text-sm font-medium text-gray-800 dark:text-gray-100 leading-normal">${text}</div>
@@ -1630,20 +1914,13 @@
       const nextDisabled = s.currentIndex === s.questions.length - 1;
       const canCheck = s.mode === 'practice' && !isChecked && !!picked;
       const showCheckBtn = s.mode === 'practice' && !s.submitted && !isChecked;
+      const showNextAfterCheck = s.mode === 'practice' && !s.submitted && isChecked;
       const showSubmitBtn = s.mode === 'exam' && !s.submitted;
+      const showNavButtons = s.mode !== 'practice'; // Ẩn nút Trước/Tiếp trong practice mode
       
       // Kiểm tra xem practice mode đã hoàn thành chưa (tất cả câu đã được check)
-      if (s.mode === 'practice' && !s.submitted && !s.resultsShown) {
-        const allChecked = s.questions.every((q, idx) => s.checked[idx] === true);
-        if (allChecked) {
-          // Tự động hiển thị kết quả khi hoàn thành
-          s.resultsShown = true;
-          setTimeout(() => {
-            window.openResultsOverview();
-          }, 500);
-          return;
-        }
-      }
+      const allChecked = s.mode === 'practice' && !s.submitted && s.questions.every((q, idx) => s.checked[idx] === true);
+      const showResultsBtn = allChecked; // Hiển thị nút "Xem kết quả" khi hoàn thành
 
       area.innerHTML = `
         <div class=" max-w-3xl mx-auto">
@@ -1668,29 +1945,37 @@
                 ${optionsHTML}
              </div>
 
-             ${(s.mode === 'practice' && isChecked) ? `
-               <div class="p-4 rounded-xl ${picked === q.correctKey ? 'bg-green-50 dark:bg-green-900/20 text-green-800 dark:text-green-300' : 'bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-300'} border border-transparent ">
-                 <div class="flex items-center gap-2 font-bold mb-1">
-                   ${picked === q.correctKey ? '<i class="fas fa-circle-check"></i> Chính xác!' : '<i class="fas fa-circle-xmark"></i> Sai rồi!'}
-                 </div>
-                 <div class="text-sm opacity-90">Đáp án đúng là: <b>${q.correctKey}</b></div>
-               </div>
-             ` : ''}
           </div>
 
           <div class="flex items-center justify-between mt-6 gap-3">
-             <button class="px-5 py-3 rounded-xl font-semibold text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-800 disabled:opacity-30" 
-                     ${prevDisabled ? 'disabled' : ''} onclick="window.prevQuestion()"><i class="fas fa-arrow-left mr-2"></i>Trước</button>
+             ${showNavButtons ? `<button class="px-5 py-3 rounded-xl font-semibold text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-800 disabled:opacity-30" 
+                     ${prevDisabled ? 'disabled' : ''} onclick="window.prevQuestion()"><i class="fas fa-arrow-left mr-2"></i>Trước</button>` : '<div></div>'}
              
-             <div class="flex gap-3 flex-1 justify-center">
-               ${showCheckBtn ? `<button class="px-6 py-3 rounded-xl bg-blue-600 text-white font-bold shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 disabled:opacity-50 disabled:shadow-none" ${canCheck ? '' : 'disabled'} onclick="window.checkCurrent()">Kiểm tra</button>` : ''}
+             <div class="flex gap-3 flex-1 items-center">
+               ${showCheckBtn ? `
+                 <button class="px-4 py-3 rounded-xl text-gray-600 dark:text-gray-300 font-semibold hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-600" onclick="window.skipQuestion()">Bỏ qua</button>
+                 <div class="flex-1 flex justify-center">
+                   <button class="px-6 py-3 rounded-xl bg-blue-600 text-white font-bold shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 disabled:opacity-50 disabled:shadow-none" ${canCheck ? '' : 'disabled'} onclick="window.checkCurrent()">Kiểm tra</button>
+                 </div>
+                 <button class="px-4 py-3 rounded-xl text-gray-600 dark:text-gray-300 font-semibold hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-600" onclick="window.dontKnow()">Không biết làm</button>
+               ` : ''}
+               ${showNextAfterCheck && !allChecked ? `
+                 <div class="flex-1 flex justify-center">
+                   <button class="px-6 py-3 rounded-xl bg-blue-600 text-white font-bold shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 ${nextDisabled ? 'opacity-50 cursor-not-allowed' : ''}" ${nextDisabled ? 'disabled' : ''} onclick="window.nextQuestion()">Chuyển sang câu tiếp theo <i class="fas fa-arrow-right ml-2"></i></button>
+                 </div>
+               ` : ''}
+               ${showResultsBtn ? `
+                 <div class="flex-1 flex justify-center">
+                   <button class="px-6 py-3 rounded-xl bg-green-600 text-white font-bold shadow-lg shadow-green-500/30 hover:shadow-green-500/50" onclick="window.openResultsOverview()">Xem kết quả <i class="fas fa-chart-bar ml-2"></i></button>
+                 </div>
+               ` : ''}
                ${showSubmitBtn ? `<button class="px-6 py-3 rounded-xl bg-green-600 text-white font-bold shadow-lg shadow-green-500/30 hover:shadow-green-500/50 " onclick="window.submitQuiz()">Nộp bài <i class="fas fa-paper-plane ml-2"></i></button>` : ''}
                
                ${(s.mode === 'exam' && s.submitted) ? `<button class="px-6 py-3 rounded-xl bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-bold shadow-lg " onclick="window.openResultsOverview()">Xem kết quả</button>` : ''}
              </div>
 
-             <button class="px-5 py-3 rounded-xl font-semibold ${isChecked ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30' : 'text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-800'} disabled:opacity-30" 
-                     ${nextDisabled ? 'disabled' : ''} onclick="window.nextQuestion()">Tiếp <i class="fas fa-arrow-right ml-2"></i></button>
+             ${showNavButtons ? `<button class="px-5 py-3 rounded-xl font-semibold ${isChecked ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30' : 'text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-800'} disabled:opacity-30" 
+                     ${nextDisabled ? 'disabled' : ''} onclick="window.nextQuestion()">Tiếp <i class="fas fa-arrow-right ml-2"></i></button>` : '<div></div>'}
           </div>
         </div>
       `;
@@ -1717,36 +2002,19 @@
                 <span class="px-3 py-1 rounded-full bg-green-100 text-green-700 text-xs font-bold">Đúng: ${total - wrongCount}</span>
              </div>
              <div class="grid ${hasWrongAnswers ? 'grid-cols-1 sm:grid-cols-3' : 'grid-cols-1 sm:grid-cols-2'} gap-3 max-w-lg mx-auto">
-               <button class="py-3 rounded-xl bg-gray-100 dark:bg-gray-700 font-semibold hover:bg-gray-200" onclick="window.viewFullReview()">
+               <button class="py-3 rounded-xl bg-orange-500 text-white font-semibold hover:bg-orange-600 shadow-lg" onclick="window.viewFullReview()">
                  <i class="fas fa-eye mr-2"></i>Xem lại bài làm
                </button>
                ${hasWrongAnswers ? `
-               <button class="py-3 rounded-xl bg-gray-100 dark:bg-gray-700 font-semibold hover:bg-gray-200" onclick="window.redoWrong()">
+               <button class="py-3 rounded-xl bg-red-500 text-white font-semibold hover:bg-red-600 shadow-lg" onclick="window.redoWrong()">
                  <i class="fas fa-redo mr-2"></i>Làm lại câu sai
                </button>
                ` : ''}
-               <button class="py-3 rounded-xl bg-blue-600 text-white font-bold hover:bg-blue-700" onclick="window.redoAll()">
+               <button class="py-3 rounded-xl bg-blue-600 text-white font-bold hover:bg-blue-700 shadow-lg" onclick="window.redoAll()">
                  <i class="fas fa-sync-alt mr-2"></i>Làm lại tất cả
                </button>
              </div>
              <button class="mt-4 text-gray-400 hover:text-gray-600 text-sm underline" onclick="window.backToManager()">Thoát về trang chủ</button>
-           </div>
-           
-           <h3 class="font-bold text-lg mb-4 px-2">Chi tiết từng câu</h3>
-           <div class="grid gap-3">
-             ${s.questions.map((q, i) => {
-                const picked = s.selected[i];
-                const ok = picked && q.correctKey && picked === q.correctKey;
-                const borderClass = ok ? 'border-l-4 border-l-green-500' : 'border-l-4 border-l-red-500';
-                return `<div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 ${borderClass} cursor-pointer hover:shadow-md" onclick="window.jumpToQuestion(${i})">
-                   <div class="flex justify-between items-start">
-                      <span class="font-bold text-gray-500 text-xs">Câu ${i+1}</span>
-                      ${ok ? '<i class="fas fa-check text-green-500"></i>' : '<i class="fas fa-xmark text-red-500"></i>'}
-                   </div>
-                   <div class="font-medium mt-1 mb-2 line-clamp-2 text-sm">${q.text}</div>
-                   <div class="text-xs text-gray-500">Bạn chọn: <b>${picked || '-'}</b> · Đáp án: <b>${q.correctKey}</b></div>
-                </div>`
-             }).join('')}
            </div>
         </div>
       `;
@@ -1878,10 +2146,20 @@
     };
 
     window.startRunner = function (mode) {
-      const pool = (window.runningQuiz?.questions || []).map((q, idx) => ({
-        origIndex: idx, text: q.text || '', options: q.options || {}, correctKey: (q.correctKey || '').toUpperCase() || null,
-      }));
-      window.startRunnerWithPool(mode, pool);
+      // Hiệu ứng fade out cho màn hình chọn chế độ
+      const area = document.getElementById('runnerArea');
+      if (area) {
+        area.style.transition = 'opacity 0.3s ease-out, transform 0.3s ease-out';
+        area.style.opacity = '0';
+        area.style.transform = 'translateY(-20px)';
+      }
+      
+      setTimeout(() => {
+        const pool = (window.runningQuiz?.questions || []).map((q, idx) => ({
+          origIndex: idx, text: q.text || '', options: q.options || {}, correctKey: (q.correctKey || '').toUpperCase() || null,
+        }));
+        window.startRunnerWithPool(mode, pool);
+      }, 300);
     };
 
     window.startRunnerWithPool = function (mode, pool) {
@@ -1911,7 +2189,23 @@
         window.startGameTimer();
       }
       
+      // Hiệu ứng fade in cho màn hình làm bài
+      const area = document.getElementById('runnerArea');
+      if (area) {
+        area.style.opacity = '0';
+        area.style.transform = 'translateY(20px)';
+      }
+      
       window.renderRunner();
+      
+      // Fade in animation
+      setTimeout(() => {
+        if (area) {
+          area.style.transition = 'opacity 0.4s ease-in, transform 0.4s ease-in';
+          area.style.opacity = '1';
+          area.style.transform = 'translateY(0)';
+        }
+      }, 50);
     };
 
     window.pickOption = function (key) {
@@ -2105,6 +2399,32 @@
       window.renderRunner();
     };
 
+    window.skipQuestion = function () {
+      const s = window.runnerState; 
+      if (!s || s.mode !== 'practice' || s.checked[s.currentIndex]) return;
+      const q = s.questions[s.currentIndex];
+      if (!q.correctKey) return;
+      // Bỏ qua: coi như đã trả lời đúng
+      s.selected[s.currentIndex] = q.correctKey;
+      s.checked[s.currentIndex] = true;
+      const orig = q.origIndex ?? s.currentIndex;
+      s.wrongSet.delete(orig); // Không thêm vào wrongSet (coi như đúng)
+      window.renderRunner();
+    };
+
+    window.dontKnow = function () {
+      const s = window.runnerState; 
+      if (!s || s.mode !== 'practice' || s.checked[s.currentIndex]) return;
+      const q = s.questions[s.currentIndex];
+      if (!q.correctKey) return;
+      // Không biết làm: bôi xanh đáp án đúng nhưng ghi nhận sai
+      s.selected[s.currentIndex] = q.correctKey;
+      s.checked[s.currentIndex] = true;
+      const orig = q.origIndex ?? s.currentIndex;
+      s.wrongSet.add(orig); // Thêm vào wrongSet (ghi nhận sai)
+      window.renderRunner();
+    };
+
     window.prevQuestion = function () { if (window.runnerState && window.runnerState.currentIndex > 0) { window.runnerState.currentIndex--; window.renderRunner(); }};
     window.nextQuestion = function () { if (window.runnerState && window.runnerState.currentIndex < window.runnerState.questions.length - 1) { window.runnerState.currentIndex++; window.renderRunner(); }};
 
@@ -2259,16 +2579,36 @@
        }
     };
 
+    window.openCreateFolderModal = function () {
+      const inp = document.getElementById('newFolderNameModal');
+      if (inp) inp.value = '';
+      window.showModal('createFolderModal');
+      setTimeout(() => {
+        if (inp) inp.focus();
+      }, 100);
+    };
+
     window.createFolder = async function () {
       if (!window.currentUser) return;
-      const inp = document.getElementById('newFolderName');
+      const inp = document.getElementById('newFolderNameModal');
       const name = (inp?.value || '').trim();
-      if (!name) return;
+      if (!name) {
+        window.showToast('Vui lòng nhập tên thư mục!');
+        return;
+      }
+      window.closeModal('createFolderModal');
       window.safeClassList('loadingOverlay', 'remove', 'hidden');
       try {
          await addDoc(collection(db, 'artifacts', appId, 'users', window.currentUser.uid, 'folders'), { name, parentId: window.currentFolderId ?? null, color: 'text-yellow-400', timestamp: Date.now() });
-         if (inp) inp.value = ''; await window.refreshFileList();
-      } catch (e) { alert('Lỗi tạo folder'); } finally { window.safeClassList('loadingOverlay', 'add', 'hidden'); }
+         if (inp) inp.value = '';
+         await window.refreshFileList();
+         window.showToast('Đã tạo thư mục thành công!');
+      } catch (e) { 
+         console.error('Error creating folder:', e);
+         alert('Lỗi tạo folder: ' + (e.message || 'Không thể tạo thư mục')); 
+      } finally { 
+         window.safeClassList('loadingOverlay', 'add', 'hidden'); 
+      }
     };
 
     window.confirmSaveQuiz = async function () {
@@ -3536,23 +3876,53 @@
              </div>
              
              <div class="flex items-center gap-2">
-                <div class="relative group">
-                   <input id="newFolderName" class="pl-3 pr-10 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-transparent text-sm w-40 focus:w-60-all outline-none" placeholder="Tên thư mục..." />
-                   <button class="absolute right-2 top-1.5 text-gray-400 hover:text-blue-500" onclick="window.createFolder()"><i class="fas fa-plus"></i></button>
-                </div>
+                <button id="toggleMultiSelectBtn" class="px-4 py-2 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-bold text-sm hover:bg-gray-200 dark:hover:bg-gray-700" onclick="window.toggleMultiSelectMode()">
+                   <i class="fas fa-check-square mr-1"></i>Chọn nhiều
+                </button>
                 <button class="w-9 h-9 rounded-xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-700" onclick="window.refreshFileList()"><i class="fas fa-rotate"></i></button>
                 <button class="px-4 py-2 rounded-xl bg-green-600 text-white font-bold text-sm shadow-lg shadow-green-500/20 " onclick="window.openSharedSection()"><i class="fas fa-share-nodes mr-1"></i> Được chia sẻ</button>
-                <button class="px-4 py-2 rounded-xl bg-blue-600 text-white font-bold text-sm shadow-lg shadow-blue-500/20 " onclick="window.startCreateNew()"><i class="fas fa-plus mr-1"></i> Tạo mới</button>
+                <button class="px-4 py-2 rounded-xl bg-yellow-500 text-white font-bold text-sm shadow-lg shadow-yellow-500/20 hover:bg-yellow-600" onclick="window.openCreateFolderModal()">
+                   <i class="fas fa-folder-plus mr-1"></i>Tạo thư mục
+                </button>
+                <button class="px-4 py-2 rounded-xl bg-blue-600 text-white font-bold text-sm shadow-lg shadow-blue-500/20 " onclick="window.startCreateNew()"><i class="fas fa-plus mr-1"></i> Tạo bộ đề mới</button>
              </div>
           </div>
 
           <div class="flex-1 p-2 bg-gray-50/30 dark:bg-gray-900/10">
-             <div class="grid grid-cols-12 px-6 py-2 text-xs font-bold text-gray-400 uppercase tracking-wider">
+             <div id="fileListHeader" class="grid grid-cols-12 px-6 py-2 text-xs font-bold text-gray-400 uppercase tracking-wider">
                 <div class="col-span-7">Tên</div>
                 <div class="col-span-3">Ngày tạo</div>
                 <div class="col-span-2 text-right">Tác vụ</div>
              </div>
              <div id="fileListBody" class="space-y-1 mt-2"></div>
+          </div>
+          
+          <!-- Multi-select Action Bar -->
+          <div id="multiSelectActionsBar" class="hidden multi-select-actions p-4 border-t border-gray-200 dark:border-gray-700">
+             <div class="flex items-center justify-between">
+                <div class="flex items-center gap-4">
+                   <span class="text-sm font-bold text-gray-700 dark:text-gray-300">
+                      Đã chọn: <span id="selectedCount" class="text-blue-600 dark:text-blue-400">0</span> mục
+                   </span>
+                   <button class="px-3 py-1.5 rounded-lg text-xs font-semibold text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700" onclick="window.selectAllItems()">
+                      Chọn tất cả
+                   </button>
+                   <button class="px-3 py-1.5 rounded-lg text-xs font-semibold text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700" onclick="window.deselectAllItems()">
+                      Bỏ chọn tất cả
+                   </button>
+                </div>
+                <div class="flex items-center gap-2">
+                   <button class="px-4 py-2 rounded-xl bg-orange-600 text-white font-bold text-sm shadow-lg shadow-orange-500/20 hover:bg-orange-700" onclick="window.moveSelectedItems()">
+                      <i class="fas fa-folder-tree mr-1"></i>Di chuyển
+                   </button>
+                   <button class="px-4 py-2 rounded-xl bg-red-600 text-white font-bold text-sm shadow-lg shadow-red-500/20 hover:bg-red-700" onclick="window.deleteSelectedItems()">
+                      <i class="fas fa-trash mr-1"></i>Xóa
+                   </button>
+                   <button class="px-4 py-2 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-bold text-sm hover:bg-gray-200 dark:hover:bg-gray-700" onclick="window.toggleMultiSelectMode()">
+                      <i class="fas fa-times mr-1"></i>Hủy
+                   </button>
+                </div>
+             </div>
           </div>
        </div>
     </section>
@@ -3688,6 +4058,21 @@
          <div class="flex gap-2 justify-end">
             <button class="px-4 py-2 rounded-xl text-gray-500 hover:bg-gray-100" onclick="window.closeModal('moveFileModal')">Hủy</button>
             <button class="px-4 py-2 rounded-xl bg-blue-600 text-white font-bold" onclick="window.confirmMove()">Di chuyển</button>
+         </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="moveSelectedModal" class="hidden relative z-[100]">
+    <div class="fixed inset-0 bg-black/50 backdrop-blur-sm"></div>
+    <div class="fixed inset-0 z-10 flex items-center justify-center p-4">
+      <div class="fs-modal-panel bg-white dark:bg-gray-800 p-6 rounded-3xl w-full max-w-sm shadow-2xl scale-95 opacity-0-all">
+         <h3 class="font-bold text-lg mb-2">Di chuyển <span id="moveSelectedCount" class="text-blue-600"></span> mục đến</h3>
+         <p class="text-sm text-gray-500 mb-4">Chọn thư mục đích để di chuyển các mục đã chọn</p>
+         <select id="moveTargetSelectMulti" class="w-full fs-input px-4 py-3 rounded-xl mb-6"></select>
+         <div class="flex gap-2 justify-end">
+            <button class="px-4 py-2 rounded-xl text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700" onclick="window.closeModal('moveSelectedModal')">Hủy</button>
+            <button class="px-4 py-2 rounded-xl bg-blue-600 text-white font-bold hover:bg-blue-700" onclick="window.confirmMoveSelected()">Di chuyển</button>
          </div>
       </div>
     </div>
@@ -3836,6 +4221,26 @@
             </div>
           </div>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="createFolderModal" class="hidden relative z-[100]">
+    <div class="fixed inset-0 bg-black/50 backdrop-blur-sm"></div>
+    <div class="fixed inset-0 z-10 flex items-center justify-center p-4">
+      <div class="fs-modal-panel bg-white dark:bg-gray-800 p-6 rounded-3xl w-full max-w-sm shadow-2xl scale-95 opacity-0-all">
+         <div class="flex items-center justify-center w-12 h-12 rounded-full bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400 mb-4 mx-auto text-xl">
+            <i class="fas fa-folder-plus"></i>
+         </div>
+         <h3 class="font-bold text-lg mb-2 text-center">Tạo thư mục mới</h3>
+         <p class="text-sm text-gray-500 text-center mb-4">Nhập tên cho thư mục mới</p>
+         <input id="newFolderNameModal" class="w-full fs-input px-4 py-3 rounded-xl mb-4" placeholder="Tên thư mục..." onkeypress="if(event.key==='Enter') window.createFolder()" />
+         <div class="flex gap-2 justify-end">
+            <button class="px-4 py-2 rounded-xl text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700" onclick="window.closeModal('createFolderModal')">Hủy</button>
+            <button class="px-4 py-2 rounded-xl bg-yellow-500 text-white font-bold hover:bg-yellow-600" onclick="window.createFolder()">
+               <i class="fas fa-check mr-1"></i>Tạo
+            </button>
+         </div>
       </div>
     </div>
   </div>
