@@ -2,7 +2,10 @@
 <html lang="vi" class="">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <title>FastStudy - Cloud Edition</title>
 
   <script src="https://cdn.tailwindcss.com"></script>
@@ -83,6 +86,47 @@
     body {
       font-family: 'Plus Jakarta Sans', sans-serif;
       overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      text-rendering: optimizeLegibility;
+    }
+    
+    /* Better mobile base styles */
+    @media (max-width: 768px) {
+      html {
+        -webkit-text-size-adjust: 100%;
+        -ms-text-size-adjust: 100%;
+      }
+      
+      body {
+        position: relative;
+        min-height: 100vh;
+        -webkit-tap-highlight-color: transparent;
+      }
+      
+      /* Performance optimizations */
+      * {
+        -webkit-backface-visibility: hidden;
+        backface-visibility: hidden;
+      }
+      
+      /* Reduce animations on mobile for better performance */
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          animation-duration: 0.01ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: 0.01ms !important;
+        }
+      }
+      
+      /* Better will-change for smoother animations */
+      .fs-card,
+      button,
+      .fs-modal-panel {
+        will-change: transform;
+      }
     }
 
     /* Animated Background */
@@ -1574,6 +1618,388 @@
       #answerPreviewContainer {
         max-height: 300px;
       }
+    }
+
+    /* ==========================================
+       ENHANCED MOBILE OPTIMIZATIONS
+       ========================================== */
+    
+    /* Prevent horizontal scroll on mobile */
+    @media (max-width: 768px) {
+      * {
+        max-width: 100%;
+      }
+      
+      body {
+        overflow-x: hidden;
+        -webkit-overflow-scrolling: touch;
+      }
+      
+      /* Better touch targets - minimum 44x44px */
+      button, a, input[type="checkbox"], input[type="radio"] {
+        min-height: 44px;
+        min-width: 44px;
+      }
+      
+      /* Improved scrolling */
+      .overflow-y-auto, .overflow-auto {
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior: contain;
+      }
+      
+      /* Better text selection */
+      * {
+        -webkit-tap-highlight-color: rgba(59, 130, 246, 0.2);
+      }
+      
+      /* Prevent zoom on input focus (iOS) */
+      input[type="text"],
+      input[type="email"],
+      input[type="password"],
+      input[type="number"],
+      input[type="search"],
+      textarea,
+      select {
+        font-size: 16px !important;
+      }
+      
+      /* Better table responsiveness */
+      table {
+        display: block;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        white-space: nowrap;
+      }
+      
+      /* Grid improvements */
+      .grid {
+        grid-template-columns: 1fr !important;
+      }
+      
+      /* Better spacing for mobile */
+      .gap-4 { gap: 0.75rem !important; }
+      .gap-6 { gap: 1rem !important; }
+      .gap-8 { gap: 1.25rem !important; }
+      
+      /* Better card spacing */
+      .fs-card + .fs-card {
+        margin-top: 1rem;
+      }
+      
+      /* Improved file manager on mobile */
+      #fileManagerSection .grid.grid-cols-12 {
+        display: flex;
+        flex-direction: column;
+      }
+      
+      #fileManagerSection .grid.grid-cols-12 > * {
+        width: 100%;
+      }
+      
+      /* Better quiz options layout */
+      #runnerArea .grid.gap-2,
+      #runnerArea .grid.gap-3,
+      #runnerArea .space-y-2 {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+      }
+      
+      #runnerArea .grid.gap-2 button,
+      #runnerArea .grid.gap-3 button,
+      #runnerArea .space-y-2 button {
+        width: 100%;
+        text-align: left;
+        justify-content: flex-start;
+      }
+      
+      /* Better modal on mobile */
+      .fs-modal-panel {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        margin: 0 !important;
+        border-radius: 0 !important;
+        max-width: 100% !important;
+        width: 100% !important;
+        height: 100vh !important;
+        max-height: 100vh !important;
+      }
+      
+      /* Better header buttons */
+      header .flex {
+        gap: 0.5rem;
+      }
+      
+      header button {
+        padding: 8px 12px !important;
+        font-size: 13px !important;
+      }
+      
+      /* Better feature selection cards */
+      #featureSelectionSection .grid {
+        gap: 1rem !important;
+      }
+      
+      #featureSelectionSection .fs-card {
+        width: 100% !important;
+        max-width: 100% !important;
+      }
+      
+      /* Better home section */
+      #homeSection .fs-card {
+        width: 100% !important;
+      }
+      
+      /* Better input section */
+      #inputSection textarea {
+        width: 100% !important;
+        box-sizing: border-box;
+      }
+      
+      /* Better quiz settings button */
+      #quizSettingsBtn {
+        width: 48px !important;
+        height: 48px !important;
+        bottom: 16px !important;
+        left: 16px !important;
+        font-size: 1.1rem !important;
+      }
+      
+      /* Better toast positioning */
+      #toast {
+        left: 12px !important;
+        right: 12px !important;
+        max-width: calc(100% - 24px) !important;
+      }
+      
+      /* Better breadcrumbs */
+      #breadcrumbContainer {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        flex-wrap: nowrap;
+        padding-bottom: 4px;
+      }
+      
+      /* Better profile section */
+      #profileSection .grid {
+        grid-template-columns: 1fr !important;
+      }
+      
+      /* Better shared section */
+      #sharedSection .grid {
+        grid-template-columns: 1fr !important;
+      }
+      
+      /* Better FastTrans section on mobile */
+      #fastTransInputContainer,
+      #fastTransOutputContainer {
+        position: relative !important;
+        left: auto !important;
+        right: auto !important;
+        top: auto !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        margin-bottom: 1rem;
+      }
+      
+      /* Better icon sizes */
+      .w-16, .h-16 {
+        width: 3rem !important;
+        height: 3rem !important;
+      }
+      
+      .w-12, .h-12 {
+        width: 2.5rem !important;
+        height: 2.5rem !important;
+      }
+      
+      /* Better image handling */
+      img {
+        max-width: 100%;
+        height: auto;
+        display: block;
+      }
+      
+      /* Better avatar images */
+      #headerAvatarBtn img,
+      #profileAvatarImg {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      
+      /* Better touch interactions */
+      button:active,
+      a:active,
+      .cursor-pointer:active {
+        opacity: 0.7;
+        transform: scale(0.98);
+        transition: all 0.1s ease;
+      }
+      
+      /* Better focus states for accessibility */
+      button:focus-visible,
+      a:focus-visible,
+      input:focus-visible,
+      textarea:focus-visible,
+      select:focus-visible {
+        outline: 2px solid rgba(59, 130, 246, 0.5);
+        outline-offset: 2px;
+      }
+      
+      /* Better scrollbar on mobile */
+      ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+      }
+      
+      ::-webkit-scrollbar-track {
+        background: rgba(0, 0, 0, 0.05);
+      }
+      
+      ::-webkit-scrollbar-thumb {
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 3px;
+      }
+      
+      html.dark ::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.05);
+      }
+      
+      html.dark ::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.2);
+      }
+      
+      /* Better spacing for action buttons */
+      .flex.items-center.gap-3 {
+        gap: 0.75rem !important;
+        flex-wrap: wrap;
+      }
+      
+      /* Better file list items */
+      #fileListBody > div {
+        padding: 1rem 0.75rem !important;
+        margin: 0.5rem 0 !important;
+      }
+      
+      /* Better action buttons in file list */
+      #fileListBody button {
+        min-width: 40px;
+        min-height: 40px;
+        padding: 8px !important;
+      }
+      
+      /* Better quiz runner stats */
+      #runnerArea .text-center {
+        padding: 1rem !important;
+      }
+      
+      /* Better loading overlay */
+      #loadingOverlay {
+        font-size: 14px !important;
+      }
+      
+      /* Better form labels */
+      label {
+        font-size: 14px !important;
+        margin-bottom: 0.5rem !important;
+      }
+      
+      /* Better select dropdowns */
+      select {
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23333' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 12px center;
+        padding-right: 40px !important;
+      }
+    }
+    
+    /* Extra small devices - additional optimizations */
+    @media (max-width: 480px) {
+      /* Even smaller padding */
+      main {
+        padding-left: 8px !important;
+        padding-right: 8px !important;
+      }
+      
+      .fs-card {
+        padding: 1rem !important;
+      }
+      
+      /* Smaller header */
+      header {
+        padding: 0 8px !important;
+      }
+      
+      /* Better button sizes */
+      button {
+        padding: 12px 16px !important;
+        font-size: 14px !important;
+      }
+      
+      /* Better icon sizes */
+      i.fas, i.far {
+        font-size: 0.9em !important;
+      }
+      
+      /* Better text sizes */
+      .text-sm { font-size: 13px !important; }
+      .text-xs { font-size: 11px !important; }
+      
+      /* Better spacing */
+      .mb-4 { margin-bottom: 0.75rem !important; }
+      .mb-3 { margin-bottom: 0.5rem !important; }
+      
+      /* Better quiz settings button */
+      #quizSettingsBtn {
+        width: 44px !important;
+        height: 44px !important;
+        bottom: 12px !important;
+        left: 12px !important;
+        font-size: 1rem !important;
+      }
+      
+      /* Better modal padding */
+      .fs-modal-panel {
+        padding: 1rem !important;
+      }
+      
+      /* Better file manager */
+      #fileManagerSection .p-6 {
+        padding: 0.75rem !important;
+      }
+      
+      /* Better quiz options */
+      #runnerArea button {
+        padding: 14px 16px !important;
+        font-size: 14px !important;
+        line-height: 1.5 !important;
+      }
+    }
+    
+    /* Very small devices (iPhone SE, etc.) */
+    @media (max-width: 375px) {
+      main {
+        padding-left: 6px !important;
+        padding-right: 6px !important;
+      }
+      
+      .fs-card {
+        padding: 0.875rem !important;
+        border-radius: 1rem !important;
+      }
+      
+      button {
+        padding: 10px 14px !important;
+        font-size: 13px !important;
+      }
+      
+      h1 { font-size: 1.5rem !important; }
+      h2 { font-size: 1.25rem !important; }
+      h3 { font-size: 1.125rem !important; }
     }
 
     /* Quiz Settings - CSS Variables */
