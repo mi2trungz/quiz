@@ -532,6 +532,16 @@
       filter: brightness(1.1);
     }
 
+    /* Hide theme toggle button in specific modes (handled by JavaScript) */
+    #themeToggleBtn.hidden {
+      display: none !important;
+    }
+    
+    /* Hide Mode button (renderRunnerModePicker) */
+    button[onclick*="renderRunnerModePicker"] {
+      display: none !important;
+    }
+    
     /* Theme toggle button hover */
     header button[onclick*="toggleTheme"]:hover {
       transform: rotate(15deg) scale(1.1);
@@ -1713,6 +1723,28 @@
         justify-content: flex-start;
       }
       
+      /* Reorder buttons on mobile: Kiểm tra on top, Bỏ qua below */
+      #runnerArea .mobile-buttons-container {
+        flex-direction: column !important;
+        gap: 0.75rem !important;
+      }
+      
+      #runnerArea .mobile-buttons-container .order-1 {
+        order: 2 !important; /* Bỏ qua - second */
+      }
+      
+      #runnerArea .mobile-buttons-container .order-2 {
+        order: 1 !important; /* Kiểm tra - first */
+      }
+      
+      #runnerArea .mobile-buttons-container .order-3 {
+        order: 3 !important; /* Không biết làm - third */
+      }
+      
+      #runnerArea .mobile-buttons-container .order-2 > button {
+        width: 100% !important;
+      }
+      
       /* Better modal on mobile */
       .fs-modal-panel {
         position: fixed !important;
@@ -1759,13 +1791,24 @@
         box-sizing: border-box;
       }
       
-      /* Better quiz settings button */
+      /* Better quiz settings button - Position at top-right of question card on mobile */
       #quizSettingsBtn {
-        width: 48px !important;
-        height: 48px !important;
-        bottom: 16px !important;
-        left: 16px !important;
-        font-size: 1.1rem !important;
+        width: 44px !important;
+        height: 44px !important;
+        position: absolute !important;
+        top: 12px !important;
+        right: 12px !important;
+        bottom: auto !important;
+        left: auto !important;
+        font-size: 1rem !important;
+        z-index: 60 !important;
+      }
+      
+      /* Ensure question card is relative positioned for absolute positioning of settings button */
+      #runnerArea .bg-white,
+      #runnerArea [class*="bg-white"],
+      #runnerArea [class*="bg-gray-800"] {
+        position: relative !important;
       }
       
       /* Better toast positioning */
@@ -2204,6 +2247,17 @@
       if (backBtn) {
         const canBack = window.__viewStack.length > 0 && targetId !== 'appLandingSection';
         backBtn.classList[canBack ? 'remove' : 'add']('hidden');
+      }
+      
+      // Hide theme toggle button in specific modes
+      const themeToggleBtn = document.getElementById('themeToggleBtn');
+      if (themeToggleBtn) {
+        const hideThemeToggleModes = ['quizRunnerSection', 'inputSection', 'fastTransSection'];
+        if (hideThemeToggleModes.includes(targetId)) {
+          themeToggleBtn.classList.add('hidden');
+        } else {
+          themeToggleBtn.classList.remove('hidden');
+        }
       }
 
       if (fromId) {
@@ -6287,13 +6341,13 @@
              ${showNavButtons ? `<button class="px-5 py-3 rounded-xl font-semibold text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-800 disabled:opacity-30" 
                      ${prevDisabled ? 'disabled' : ''} onclick="window.prevQuestion()"><i class="fas fa-arrow-left mr-2"></i>Trước</button>` : '<div></div>'}
              
-             <div class="flex gap-3 flex-1 items-center">
+             <div class="flex gap-3 flex-1 items-center mobile-buttons-container">
                ${showCheckBtn ? `
-                 <button class="px-4 py-3 rounded-xl text-gray-600 dark:text-gray-300 font-semibold hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-600" onclick="window.skipQuestion()">Bỏ qua</button>
-                 <div class="flex-1 flex justify-center">
-                   <button class="px-6 py-3 rounded-xl bg-blue-600 text-white font-bold shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 disabled:opacity-50 disabled:shadow-none" ${canCheck ? '' : 'disabled'} onclick="window.checkCurrent()">Kiểm tra</button>
+                 <div class="flex-1 flex justify-center order-2 md:order-2">
+                   <button class="w-full md:w-auto px-6 py-3 rounded-xl bg-blue-600 text-white font-bold shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 disabled:opacity-50 disabled:shadow-none" ${canCheck ? '' : 'disabled'} onclick="window.checkCurrent()">Kiểm tra</button>
                  </div>
-                 <button class="px-4 py-3 rounded-xl text-gray-600 dark:text-gray-300 font-semibold hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-600" onclick="window.dontKnow()">Không biết làm</button>
+                 <button class="px-4 py-3 rounded-xl text-gray-600 dark:text-gray-300 font-semibold hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-600 order-1 md:order-1" onclick="window.skipQuestion()">Bỏ qua</button>
+                 <button class="px-4 py-3 rounded-xl text-gray-600 dark:text-gray-300 font-semibold hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-600 order-3 md:order-3" onclick="window.dontKnow()">Không biết làm</button>
                ` : ''}
                ${showNextAfterCheck && !allChecked ? `
                  <div class="flex-1 flex justify-center">
@@ -10296,7 +10350,7 @@
         <button id="backBtn" class="hidden w-10 h-10 rounded-xl flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500" onclick="window.goBack()">
            <i class="fas fa-arrow-left"></i>
         </button>
-        <button class="w-10 h-10 rounded-xl flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500" onclick="window.toggleTheme()">
+        <button id="themeToggleBtn" class="w-10 h-10 rounded-xl flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500" onclick="window.toggleTheme()">
            <i class="fas fa-moon dark:hidden"></i>
            <i class="fas fa-sun hidden dark:inline text-yellow-400"></i>
         </button>
